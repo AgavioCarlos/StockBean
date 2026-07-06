@@ -7,7 +7,8 @@ import lombok.Setter;
 @Setter
 public class LoginRequest {
 
+    private Integer sucursal;
     private String cuenta;
     private String password;
-    
+
 }
