@@ -1,10 +1,3 @@
-/**
- * DynamicSidebar - Sidebar que se construye dinámicamente basado en los permisos del usuario
- * 
- * Este componente reemplaza el Sidebar estático cargando las pantallas permitidas
- * desde el localStorage (previamente obtenidas del backend al hacer login).
- */
-
 import React, { useState, useEffect, useMemo } from "react";
 import { NavLink } from "react-router-dom";
 import { FiX, FiChevronRight, FiChevronLeft, FiChevronDown } from "react-icons/fi";
@@ -12,7 +5,7 @@ import { Pantalla } from "../../interfaces/pantalla.interface";
 import { getPantallasFromLocalStorage } from "../../services/Pantallas";
 import { getIcon } from "../../utils/iconMapper";
 import { useResponsive } from "../../hooks/useResponsive";
-import { useEmpresaEstilos } from "../../hooks/useEmpresaEstilos";
+import { useStyles } from "../../hooks/useStyles";
 
 type DynamicSidebarProps = {
     isOpen: boolean;
@@ -21,9 +14,6 @@ type DynamicSidebarProps = {
     onCollapsedChange?: (collapsed: boolean) => void;
 };
 
-/**
- * Componente para items del menú sin hijos
- */
 const NavItem: React.FC<{
     to: string;
     label: string;
@@ -57,9 +47,6 @@ const NavItem: React.FC<{
     );
 };
 
-/**
- * Componente para items del menú padre (desplegables)
- */
 const ParentNavItem: React.FC<{
     label: string;
     icon?: React.ComponentType;
@@ -118,7 +105,7 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
     onCollapsedChange,
 }) => {
     const { isMobile } = useResponsive();
-    const { diseno } = useEmpresaEstilos();
+    const { styles } = useStyles();
     const [internalCollapsed, setInternalCollapsed] = useState(false);
     const [pantallas, setPantallas] = useState<Pantalla[]>([]);
     const collapsed = collapsedProp !== undefined ? collapsedProp : internalCollapsed;
@@ -163,7 +150,7 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
                     ${isOpen ? "translate-x-0" : "-translate-x-full"}
                     ${collapsed && !isMobile ? "w-20" : "w-72"}
                 `}
-                style={{ 
+                style={{
                     minWidth: collapsed && !isMobile ? 80 : 288,
                     backgroundColor: 'var(--color-secundario)'
                 }}
@@ -176,11 +163,11 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
                             onClick={isMobile ? onClose : undefined}
                             className={`flex items-center gap-4 p-6 hover:bg-white/5 transition-all group ${collapsed && !isMobile ? "justify-center" : ""}`}
                         >
-                            <div 
+                            <div
                                 className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-black/20 group-hover:rotate-12 transition-transform duration-500"
                                 style={{ backgroundColor: 'var(--color-primario)' }}
                             >
-                                <img src={diseno?.urlLogo || "/stock_icono.ico"} alt="Logo" className={`w-6 h-6 ${!diseno?.urlLogo ? 'invert' : ''}`} />
+                                <img src={styles?.urlLogo || "/stock_icono.ico"} alt="Logo" className={`w-6 h-6 ${!styles?.urlLogo ? 'invert' : ''}`} />
                             </div>
                             {!collapsed && !isMobile && (
                                 <div className="flex flex-col">

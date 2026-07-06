@@ -21,7 +21,6 @@ export const SharedButton: React.FC<SharedButtonProps> = ({
     disabled,
     ...props
 }) => {
-    // Verificar si el tema de empresa está configurado (si existe el id_empresa)
     const isEmpresa = !!localStorage.getItem("id_empresa");
 
     // Base styles

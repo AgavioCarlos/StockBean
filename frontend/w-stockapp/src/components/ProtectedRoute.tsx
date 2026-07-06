@@ -1,29 +1,10 @@
-/**
- * ProtectedRoute - Componente para proteger rutas que requieren autenticación y permisos
- * 
- * Funcionalidades:
- * 1. Verifica si el usuario está autenticado (tiene token válido)
- * 2. Verifica si el usuario tiene permisos para acceder a la ruta actual
- * 3. Redirige a /login si no está autenticado
- * 4. Redirige a /unauthorized si no tiene permisos
- * 
- * Uso:
- * <ProtectedRoute requirePermission={true}>
- *   <MiComponente />
- * </ProtectedRoute>
- * 
- * Props:
- * - children: Componente hijo a renderizar si tiene acceso
- * - requirePermission: Si es true, valida permisos. Si es false, solo valida autenticación
- */
-
 import { Navigate, useLocation } from "react-router-dom";
 import { usePantallas } from "../hooks/usePantallas";
-import { useEmpresaEstilos } from "../hooks/useEmpresaEstilos";
+import { useStyles } from "../hooks/useStyles";
 
 interface ProtectedRouteProps {
-    children: JSX.Element;
-    requirePermission?: boolean; // Por defecto true - valida permisos
+    children: React.ReactNode;
+    requirePermission?: boolean;
 }
 
 const ProtectedRoute = ({
@@ -33,26 +14,17 @@ const ProtectedRoute = ({
     const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
     const location = useLocation();
     const { hasAccess, loading: loadingPantallas } = usePantallas();
-    
-    // Cargar estilos dinámicos de la empresa
-    const { loading: loadingEstilos } = useEmpresaEstilos();
 
-    const loading = loadingPantallas || loadingEstilos;
+    const { loading: loadingStyles } = useStyles();
 
-    console.log(`ProtectedRoute: Checking access for ${location.pathname}. Auth: ${isAuthenticated}, Loading: ${loading}, RequirePerm: ${requirePermission}`);
+    const loading = loadingPantallas || loadingStyles;
 
-    // 1️⃣ Si no está autenticado, redirigir a login
     if (!isAuthenticated) {
-        console.warn("ProtectedRoute: Not authenticated. Redirecting to login.");
         return <Navigate to="/login" replace />;
     }
-
-    // 2️⃣ Si no requiere validación de permisos, permitir acceso
     if (!requirePermission) {
         return children;
     }
-
-    // 3️⃣ Esperar a que carguen las pantallas
     if (loading) {
         console.log("ProtectedRoute: Loading permissions...");
         return (
@@ -64,8 +36,6 @@ const ProtectedRoute = ({
             </div>
         );
     }
-
-    // 4️⃣ Verificar si tiene acceso a la ruta actual
     const currentPath = location.pathname;
 
     // Lista de rutas públicas que no requieren validación de permisos
@@ -83,8 +53,6 @@ const ProtectedRoute = ({
         console.warn(`⛔ Acceso denegado a: ${currentPath}`);
         return <Navigate to="/unauthorized" replace />;
     }
-
-    // 6️⃣ Si pasa todas las validaciones, renderizar el componente hijo
     console.log(`ProtectedRoute: Access granted to ${currentPath}. Rendering children.`);
     return children;
 };
