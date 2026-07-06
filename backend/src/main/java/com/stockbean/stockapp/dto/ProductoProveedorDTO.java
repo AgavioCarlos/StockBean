@@ -1,18 +1,19 @@
 package com.stockbean.stockapp.dto;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VentaRequest {
-    // private Integer idSucursal;
-    private Integer idMetodoPago;
-    private BigDecimal total;
-    private List<DetalleVentaItem> items;
+public class ProductoProveedorDTO {
+    private Integer idProducto;
+    private BigDecimal precio;
+    private String codigoProveedor;
+    private Integer tiempoEntrega;
 }

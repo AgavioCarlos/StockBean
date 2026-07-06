@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UsuarioSucursalResponse {
     private Integer idUsuarioSucursal;
-    private Integer idUsuario;
+    private Integer id_usuario;
     private Integer idSucursal;
     private String nombre;
     private String direccion;
