@@ -34,7 +34,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequest request) {
-        LoginResult result = authService.login(request.getCuenta(), request.getPassword());
+        LoginResult result = authService.login(request.getSucursal(), request.getCuenta(), request.getPassword());
         return ResponseEntity.status(result.getHttpStatus()).body(result.getBody());
     }
 

@@ -1,7 +1,5 @@
 package com.stockbean.stockapp.controller;
-
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,14 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.stockbean.stockapp.model.tablas.Inventario;
 import com.stockbean.stockapp.service.InventarioService;
 import org.springframework.security.access.prepost.PreAuthorize;
-
 import com.stockbean.stockapp.security.UsuarioPrincipal;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-
 @RestController
 @RequestMapping("/inventario")
 @CrossOrigin("*")
@@ -34,10 +29,16 @@ public class InventarioController {
     @GetMapping
     public ResponseEntity<?> listar(
             @AuthenticationPrincipal UsuarioPrincipal principal,
-            @RequestParam(required = true) Integer idSucursal) {
+            @RequestParam(required = false) Integer idSucursal) {
 
         try {
-            List<Inventario> inventario = inventarioService.listarPorUsuarioYSucursal(principal.getId(), idSucursal);
+            Integer sucursalFinal = idSucursal != null ? idSucursal : principal.getIdSucursal();
+
+            if (sucursalFinal == null) {
+                return ResponseEntity.badRequest().body("No se ha especificado una sucursal.");
+            }
+
+            List<Inventario> inventario = inventarioService.listarPorUsuarioYSucursal(principal.getId(), sucursalFinal);
             return ResponseEntity.ok(inventario);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

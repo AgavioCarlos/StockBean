@@ -1,5 +1,4 @@
 package com.stockbean.stockapp.controller;
-
 import java.util.List;
 import com.stockbean.stockapp.dto.ProductoDTO;
 import org.springframework.data.domain.Page;
@@ -18,8 +17,6 @@ import com.stockbean.stockapp.service.ProductoService;
 public class ProductoController {
 
     private final ProductoService productoService;
-
-    // S3-B5: Constructor Injection
     public ProductoController(ProductoService productoService) {
         this.productoService = productoService;
     }
@@ -30,10 +27,6 @@ public class ProductoController {
         return productoService.listar(principal.getId());
     }
 
-    /**
-     * Endpoint para paginación server-side.
-     * S3-B4: Paginación.
-     */
     @PreAuthorize("hasAnyRole('SISTEM', 'ADMIN')")
     @GetMapping("/page")
     public Page<ProductoDTO> listarPaginado(

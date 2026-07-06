@@ -12,12 +12,9 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.stockbean.stockapp.dto.PantallaDTO;
 import com.stockbean.stockapp.model.admin.Pantallas;
-import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
 import com.stockbean.stockapp.security.AuthHelper;
 import com.stockbean.stockapp.service.PantallaService;
 
@@ -31,27 +28,14 @@ public class PantallaController {
     @Autowired
     private AuthHelper authHelper;
 
-    @Autowired
-    private EmpresaUsuarioRepository empresaUsuarioRepository;
-
     @GetMapping
-    public ResponseEntity<?> getPantallasUsuario(@RequestParam(required = false) Integer idEmpresa) {
+    public ResponseEntity<?> getPantallasUsuario(@PathVariable Integer idSucursal) {
         Integer idUsuario = authHelper.getIdUsuarioFromToken();
-        Integer idRol = authHelper.getIdRolFromToken();
-
         if (idUsuario == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("No se pudo obtener el usuario autenticado");
         }
-
-        if (idEmpresa == null) {
-            List<Integer> idsEmpresas = empresaUsuarioRepository.findIdEmpresaByUsuarioId(idUsuario);
-            if (!idsEmpresas.isEmpty()) {
-                idEmpresa = idsEmpresas.get(0);
-            }
-        }
-
-        List<PantallaDTO> pantallas = pantallaService.findPantallasUsuario(idUsuario, idEmpresa);
+        List<PantallaDTO> pantallas = pantallaService.findPantallasUsuario(idUsuario, idSucursal);
         return ResponseEntity.ok(pantallas);
     }
 
@@ -73,6 +57,7 @@ public class PantallaController {
         List<Pantallas> pantallas = pantallaService.findPantallasByRol(idRol);
         return ResponseEntity.ok(pantallas);
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getPantalla(@PathVariable Integer id) {
         return ResponseEntity.ok(pantallaService.getPantalla(id));

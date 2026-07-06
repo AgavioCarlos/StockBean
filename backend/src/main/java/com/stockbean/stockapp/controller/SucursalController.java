@@ -19,20 +19,20 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @RequestMapping("/sucursales")
-@PreAuthorize("hasAnyRole('SISTEM', 'ADMIN', 'GERENTE')")
+// @PreAuthorize("hasAnyRole('SISTEM', 'ADMIN', 'GERENTE')")
 public class SucursalController {
 
     @Autowired
     private SucursalService sucursalService;
 
     @GetMapping
-    public List<Sucursal> listar(@AuthenticationPrincipal UsuarioPrincipal principal) {
-        return sucursalService.listarSucursales(principal.getId());
+    public List<Sucursal> listar() {
+        return sucursalService.listarSucursales();
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<Sucursal>> listarSucursales(@AuthenticationPrincipal UsuarioPrincipal principal) {
-        return ResponseEntity.ok(sucursalService.listarSucursales(principal.getId()));
+    public ResponseEntity<List<Sucursal>> listarSucursales() {
+        return ResponseEntity.ok(sucursalService.listarSucursales());
     }
 
     @GetMapping("/empresa/{idEmpresa}")

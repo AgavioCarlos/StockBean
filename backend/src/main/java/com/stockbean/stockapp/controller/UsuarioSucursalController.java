@@ -36,7 +36,7 @@ public class UsuarioSucursalController {
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioSucursal> asignarUsuarioSucursal(@RequestBody UsuarioSucursal usuarioSucursal) {
+    public ResponseEntity<UsuarioSucursal> asignarUsuarioSucursal(@RequestBody @NonNull UsuarioSucursal usuarioSucursal) {
         UsuarioSucursal nuevo = usuarioSucursalService.guardar(usuarioSucursal);
         return ResponseEntity.ok(nuevo);
     }
@@ -44,6 +44,9 @@ public class UsuarioSucursalController {
     @PutMapping
     public ResponseEntity<UsuarioSucursal> actualizarUsuarioSucursal(
             @RequestBody @NonNull UsuarioSucursal usuarioSucursal) {
+        if (usuarioSucursal.getIdUsuarioSucursal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
         UsuarioSucursal actualizado = usuarioSucursalService.actualizar(usuarioSucursal);
         return ResponseEntity.ok(actualizado);
     }

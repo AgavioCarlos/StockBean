@@ -23,8 +23,6 @@ import com.stockbean.stockapp.model.tablas.TurnoCaja;
 import com.stockbean.stockapp.security.UsuarioPrincipal;
 import com.stockbean.stockapp.service.CajaService;
 
-// Force DevTools Reload
-
 @RestController
 @RequestMapping("/cajas")
 @CrossOrigin("*")
@@ -34,10 +32,10 @@ public class CajaController {
     @Autowired
     private CajaService cajaService;
 
-    @GetMapping("/sucursal/{idSucursal}")
-    public ResponseEntity<?> obtenerCajas(@PathVariable Integer idSucursal) {
+    @GetMapping("/sucursal")
+    public ResponseEntity<?> obtenerCajas() {
         try {
-            List<Caja> cajas = cajaService.obtenerCajasPorSucursal(idSucursal);
+            List<Caja> cajas = cajaService.obtenerCajasPorSucursal();
             return ResponseEntity.ok(cajas);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
