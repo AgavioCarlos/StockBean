@@ -12,6 +12,7 @@ public class UsuarioPrincipal implements UserDetails {
 
     private final Usuario usuario;
     private final Collection<? extends GrantedAuthority> authorities;
+    private Integer idSucursal;
 
     public UsuarioPrincipal(@NonNull Usuario usuario) {
         this.usuario = usuario;
@@ -25,6 +26,14 @@ public class UsuarioPrincipal implements UserDetails {
 
     public Usuario getUsuario() {
         return usuario;
+    }
+
+    public Integer getIdSucursal() {
+        return idSucursal;
+    }
+
+    public void setIdSucursal(Integer idSucursal) {
+        this.idSucursal = idSucursal;
     }
 
     @Override

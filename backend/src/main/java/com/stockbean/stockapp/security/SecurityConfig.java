@@ -51,7 +51,8 @@ public class SecurityConfig {
                         // ⬇️ PERMITIR preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Públicos
-                        .requestMatchers("/auth/login", "/auth/registro", "/auth/reset-emergency", "/planes",
+                        .requestMatchers("/sucursales", "/auth/login", "/auth/registro", "/auth/reset-emergency",
+                                "/planes",
                                 "/historial-precios/**",
                                 "/usuarios-acciones/**", "/acciones", "/config/**", "/health", "/system/**",
                                 "/config/database/test", "/ws-chat/**")
