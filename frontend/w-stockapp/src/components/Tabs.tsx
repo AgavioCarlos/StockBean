@@ -58,6 +58,7 @@ const Tabs: React.FC<TabsProps> = ({
             const isActive = activeTab === tab.key;
             return (
               <button
+                type="button"
                 key={tab.key}
                 role="tab"
                 aria-selected={isActive}

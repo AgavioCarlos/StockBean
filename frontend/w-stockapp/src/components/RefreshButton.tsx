@@ -10,15 +10,6 @@ interface RefreshButtonProps {
     size?: 'sm' | 'md' | 'lg' | 'icon';
 }
 
-/**
- * A reusable refresh button component that handles loading states and provides visual feedback.
- * 
- * @param onRefresh - Function to execute when the button is clicked. Should return a promise if it's asynchronous.
- * @param className - Optional CSS classes to apply to the button.
- * @param showText - Whether to show the "Refresh" text alongside the icon.
- * @param variant - The button variant (standard SharedButton variants).
- * @param size - The button size (standard SharedButton sizes).
- */
 export const RefreshButton: React.FC<RefreshButtonProps> = ({ 
     onRefresh, 
     className = "", 
@@ -37,7 +28,6 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
         } catch (error) {
             console.error("Refresh failed:", error);
         } finally {
-            // Artificial delay to ensure the animation is visible even for fast requests
             setTimeout(() => setIsRefreshing(false), 600);
         }
     };

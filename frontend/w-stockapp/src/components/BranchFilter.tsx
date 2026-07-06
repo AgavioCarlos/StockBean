@@ -3,35 +3,39 @@ import { useAuth } from '../hooks/useAuth';
 import { consultarEmpresas } from '../services/Empresas';
 import {
     consultarSucursalesPorEmpresa
-} from '../services/SucursalService';
+} from '../features/Sucursal/SucursalService';
 import { obtenerPorIdUsuario } from '../services/UsuarioSucursalService';
 import { Sucursal } from '../interfaces/sucursal.interface';
 import { SearchableSelect } from './SearchableSelect';
+import { consultarProveedores } from '../features/Proveedores/ProveedoresService';
+import { Proveedor } from '../features/Proveedores/proveedor.interface';
 
 interface BranchFilterProps {
     onBranchChange: (idSucursal: number | "") => void;
     onEmpresaChange?: (idEmpresa: number | "") => void;
+    onProveedorChange?: (idProveedor: number | "") => void;
     value?: number | "";
     labelEmpresa?: string;
     labelSucursal?: string;
+    labelProveedor?: string;
     placeholderEmpresa?: string;
     placeholderSucursal?: string;
+    placeholderProveedor?: string;
     className?: string;
     disabled?: boolean;
 }
 
-/**
- * Component to filter by Company and Branch based on user roles (useAuth).
- * It automatically handles the fetching of data and propagates the selection via callbacks.
- */
 export const BranchFilter: React.FC<BranchFilterProps> = ({
     onBranchChange,
     onEmpresaChange,
+    onProveedorChange,
     value,
     labelEmpresa = "Empresa",
     labelSucursal = "Sucursal",
+    labelProveedor = "Proveedor",
     placeholderEmpresa = "Seleccionar empresa…",
     placeholderSucursal = "Seleccionar sucursal…",
+    placeholderProveedor = "Seleccionar proveedor…",
     className = "",
     disabled = false
 }) => {
@@ -43,9 +47,11 @@ export const BranchFilter: React.FC<BranchFilterProps> = ({
     const [sucursalesList, setSucursalesList] = useState<Sucursal[]>([]);
     const [idSucursal, setIdSucursal] = useState<number | "">(value || "");
 
+    const [proveedoresList, setProveedoresList] = useState<Proveedor[]>([]);
+    const [idProveedor, setIdProveedor] = useState<number | "">(value || "");
+
     const [loading, setLoading] = useState(false);
 
-    // Sync internal state with prop
     useEffect(() => {
         if (value !== undefined) {
             setIdSucursal(value);
@@ -67,7 +73,13 @@ export const BranchFilter: React.FC<BranchFilterProps> = ({
             description: suc.direccion ? `Dirección: ${suc.direccion}` : undefined
         })), [sucursalesList]);
 
-    // 1. Initial Load: Load Companies (if SISTEM) or Branches (if others)
+    const proveedoresOptions = useMemo(() =>
+        proveedoresList.map(prov => ({
+            value: prov.idProveedor,
+            label: prov.nombre,
+            description: prov.email ? `Email: ${prov.email}` : undefined
+        })), [proveedoresList]);
+
     useEffect(() => {
         if (!user) return;
 
@@ -78,7 +90,6 @@ export const BranchFilter: React.FC<BranchFilterProps> = ({
                     const companies = await consultarEmpresas();
                     setEmpresasList(companies || []);
                 } else {
-                    // Call UsuarioSucursalController wrapper as requested
                     const userSucs = await obtenerPorIdUsuario(user.id_usuario);
                     const mappedSucs = userSucs.filter(s => s.status).map(us => ({
                         id_sucursal: us.idSucursal,
@@ -88,18 +99,23 @@ export const BranchFilter: React.FC<BranchFilterProps> = ({
 
                     setSucursalesList(mappedSucs);
 
-                    // Auto-select if only one branch or restricted role
                     if (mappedSucs && mappedSucs.length === 1) {
                         const sId = mappedSucs[0].id_sucursal;
                         if (sId) {
                             setIdSucursal(sId);
                             onBranchChange(sId);
+                            const provs = await consultarProveedores();
+                            setProveedoresList(provs || []);
                         }
                     } else if (isCajero && mappedSucs.length > 0) {
                         const sId = mappedSucs[0].id_sucursal;
                         setIdSucursal(sId);
                         onBranchChange(sId);
                     }
+
+
+
+
                 }
             } catch (error) {
                 console.error("[BranchFilter] Error loading initial data:", error);
@@ -124,14 +140,14 @@ export const BranchFilter: React.FC<BranchFilterProps> = ({
             setLoading(true);
             try {
                 let sucs = await consultarSucursalesPorEmpresa(Number(numVal));
-                
+
                 // Si NO es SISTEM, validamos estrictamente que la sucursal exista en sus permisos
                 if (!isSistem && user) {
                     const userSucs = await obtenerPorIdUsuario(user.id_usuario);
                     const allowedIds = new Set(userSucs.filter(u => u.status).map(u => u.idSucursal));
                     sucs = sucs.filter(s => allowedIds.has(s.id_sucursal || (s as any).idSucursal));
                 }
-                
+
                 setSucursalesList(sucs || []);
             } catch (error) {
                 console.error("[BranchFilter] Error loading branches for company:", error);
@@ -147,6 +163,12 @@ export const BranchFilter: React.FC<BranchFilterProps> = ({
         setIdSucursal(numVal);
         onBranchChange(numVal);
     }, [onBranchChange]);
+
+    const handleProveedorChangeInternal = useCallback((val: string | number) => {
+        const numVal = val === "" ? "" : Number(val);
+        setIdProveedor(numVal);
+        if (onProveedorChange) onProveedorChange(numVal);
+    }, [onProveedorChange]);
 
     return (
         <div className={`flex flex-wrap gap-4 items-center ${className}`}>
@@ -175,6 +197,21 @@ export const BranchFilter: React.FC<BranchFilterProps> = ({
                         value={idSucursal}
                         onChange={handleSucursalChangeInternal}
                         disabled={disabled || (isCajero && sucursalesList.length === 1)}
+                        loading={loading}
+                    />
+                </div>
+            )}
+
+            {/* Proveedor Selector (SISTEM, ADMIN, GERENTE, CAJERO) */}
+            {(isSistem || isAdmin || isGerente || isCajero) && (
+                <div className="min-w-[240px]">
+                    <SearchableSelect
+                        label={labelProveedor}
+                        placeholder={proveedoresList.length === 0 ? "Sin proveedores" : placeholderProveedor}
+                        options={proveedoresOptions}
+                        value={idProveedor}
+                        onChange={handleProveedorChangeInternal}
+                        disabled={disabled || (isCajero && proveedoresList.length === 1)}
                         loading={loading}
                     />
                 </div>

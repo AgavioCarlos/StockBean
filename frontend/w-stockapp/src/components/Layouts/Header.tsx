@@ -9,9 +9,9 @@ import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { useAlerts } from "../../hooks/useAlerts";
 import { useResponsive } from "../../hooks/useResponsive";
 import { useAuth } from "../../hooks/useAuth";
-import { useEmpresaEstilos } from "../../hooks/useEmpresaEstilos";
+import { useStyles } from "../../hooks/useStyles";
 import { obtenerAlertas, contarAlertas, marcarAlertaLeida, marcarTodasLeidas, type IAlerta } from "../../services/AlertaService";
-import ChatRoom from "../../features/chat/components/ChatRoom";
+import ChatRoom from "../../features/Chat/components/ChatRoom";
 
 interface HeaderProps {
     isSidebarOpen?: boolean;
@@ -28,7 +28,7 @@ function Header({
     const { isMobile } = useResponsive();
     const { confirm } = useAlerts();
     const { user } = useAuth();
-    const { diseno } = useEmpresaEstilos();
+    const { styles } = useStyles();
 
     // ─── Alertas ────────────────────────────────────────────
     const [alertas, setAlertas] = useState<IAlerta[]>([]);
@@ -55,7 +55,7 @@ function Header({
 
     useEffect(() => {
         fetchAlertCount();
-        const interval = setInterval(fetchAlertCount, 30000); // cada 30s
+        const interval = setInterval(fetchAlertCount, 300000); // cada 5 minutos
         return () => clearInterval(interval);
     }, [fetchAlertCount]);
 
@@ -197,7 +197,7 @@ function Header({
                             className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
                             style={{ backgroundColor: 'var(--color-primario)' }}
                         >
-                            <img src={diseno?.urlLogo || "/stock_icono.ico"} alt="Icon" className={`w-6 h-6 ${!diseno?.urlLogo ? 'invert' : ''}`} />
+                            <img src={styles?.urlLogo || "/stock_icono.ico"} alt="Icon" className={`w-6 h-6 ${!styles?.urlLogo ? 'invert' : ''}`} />
                         </div>
                         <span className="font-bold text-lg tracking-tight">BALUARTE</span>
                     </div>
