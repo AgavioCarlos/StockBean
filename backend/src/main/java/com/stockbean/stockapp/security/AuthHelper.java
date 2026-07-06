@@ -6,19 +6,12 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
-
-/**
- * Helper class para obtener información del usuario autenticado desde el JWT
- */
 @Component
 public class AuthHelper {
 
     @Autowired
     private JwtUtil jwtUtil;
 
-    /**
-     * Obtiene el token JWT del header Authorization de la petición actual
-     */
     private String getJwtFromRequest() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes != null) {
@@ -32,11 +25,6 @@ public class AuthHelper {
         return null;
     }
 
-    /**
-     * Obtiene el id_rol del usuario autenticado desde el JWT
-     * 
-     * @return Integer con el id_rol o null si no está disponible
-     */
     public Integer getIdRolFromToken() {
         String token = getJwtFromRequest();
         if (token != null) {
@@ -45,11 +33,6 @@ public class AuthHelper {
         return null;
     }
 
-    /**
-     * Obtiene el username del usuario autenticado desde el JWT
-     * 
-     * @return String con el username o null si no está disponible
-     */
     public String getUsernameFromToken() {
         String token = getJwtFromRequest();
         if (token != null) {
@@ -58,15 +41,27 @@ public class AuthHelper {
         return null;
     }
 
-    /**
-     * Obtiene el id_usuario del usuario autenticado desde el JWT
-     * 
-     * @return Integer con el id_usuario o null si no está disponible
-     */
     public Integer getIdUsuarioFromToken() {
         String token = getJwtFromRequest();
         if (token != null) {
             return jwtUtil.extractIdUsuario(token);
+        }
+        return null;
+    }
+
+    public Integer getIdSucursalFromToken() {
+        String token = getJwtFromRequest();
+        if (token != null) {
+            return jwtUtil.extractIdSucursal(token);
+        }
+        return null;
+    }
+
+    public static Integer getCurrentSucursalId() {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder
+                .getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal) {
+            return ((UsuarioPrincipal) auth.getPrincipal()).getIdSucursal();
         }
         return null;
     }

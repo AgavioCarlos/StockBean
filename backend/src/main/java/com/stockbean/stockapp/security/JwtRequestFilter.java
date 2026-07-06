@@ -72,6 +72,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                 if (jwtUtil.validateToken(jwt, userDetails)) {
+                    // Si el UserDetails es nuestro UsuarioPrincipal, le inyectamos la sucursal del token
+                    if (userDetails instanceof UsuarioPrincipal) {
+                        Integer idSucursal = jwtUtil.extractIdSucursal(jwt);
+                        ((UsuarioPrincipal) userDetails).setIdSucursal(idSucursal);
+                        logger.debug("Sucursal {} asignada al principal para el usuario: {}", idSucursal, username);
+                    }
+
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
@@ -81,8 +88,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                             new WebAuthenticationDetailsSource().buildDetails(request));
 
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                    logger.info("✅ Autenticación exitosa en {} para: {}", 
-                        (request.getRequestURI().contains("/auth/") ? "auth" : "app"), username);
+                    logger.info("✅ Autenticación exitosa en {} para: {} (Sucursal: {})",
+                            (request.getRequestURI().contains("/auth/") ? "auth" : "app"), username,
+                            (userDetails instanceof UsuarioPrincipal ? ((UsuarioPrincipal) userDetails).getIdSucursal()
+                                    : "N/A"));
                 } else {
                     logger.warn("❌ Token no válido (expirado o firma incorrecta) para: {}", username);
                 }

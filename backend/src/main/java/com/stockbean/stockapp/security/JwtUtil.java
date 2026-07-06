@@ -40,6 +40,10 @@ public class JwtUtil {
         return extractClaim(token, claims -> claims.get("nombre_rol", String.class));
     }
 
+    public Integer extractIdSucursal(String token) {
+        return extractClaim(token, claims -> claims.get("id_sucursal", Integer.class));
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -69,11 +73,12 @@ public class JwtUtil {
         return createToken(claims, userDetails.getUsername());
     }
 
-    public String generateToken(UserDetails userDetails, Integer idUsuario, Integer idRol, String nombreRol) {
+    public String generateToken(UserDetails userDetails, Integer idUsuario, Integer idRol, String nombreRol, Integer Sucursal) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id_usuario", idUsuario);
         claims.put("id_rol", idRol);
         claims.put("nombre_rol", nombreRol);
+        claims.put("id_sucursal", Sucursal);
         return createToken(claims, userDetails.getUsername());
     }
 
@@ -87,8 +92,6 @@ public class JwtUtil {
                 .compact();
     }
 
-    // Valida el token: verifica que el nombre de usuario coincida y que el token no
-    // haya expirado.
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
