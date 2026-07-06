@@ -20,6 +20,7 @@ import com.stockbean.stockapp.dto.VentaRequest;
 import com.stockbean.stockapp.model.catalogos.MetodoPago;
 import com.stockbean.stockapp.model.tablas.DetalleVenta;
 import com.stockbean.stockapp.model.tablas.Venta;
+import com.stockbean.stockapp.security.AuthHelper;
 import com.stockbean.stockapp.security.UsuarioPrincipal;
 import com.stockbean.stockapp.service.VentaService;
 
@@ -32,18 +33,13 @@ public class VentaController {
     @Autowired
     private VentaService ventaService;
 
-    // ─────────────────────────────────────────────────────────────
-    // Búsqueda de productos para el punto de venta
-    // GET /ventas/buscar-producto?idSucursal=1&codigoBarras=123
-    // GET /ventas/buscar-producto?idSucursal=1&nombre=coca
-    // ─────────────────────────────────────────────────────────────
     @GetMapping("/buscar-producto")
     public ResponseEntity<?> buscarProducto(
-            @RequestParam Integer idSucursal,
             @RequestParam(required = false) String codigoBarras,
             @RequestParam(required = false) String nombre,
             @AuthenticationPrincipal UsuarioPrincipal principal) {
         try {
+            Integer idSucursal = AuthHelper.getCurrentSucursalId();
             List<ProductoBusquedaDTO> productos = ventaService.buscarProductos(
                     idSucursal, codigoBarras, nombre, principal.getId());
             return ResponseEntity.ok(productos);
@@ -52,11 +48,6 @@ public class VentaController {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Registrar una venta completa (header + detalles)
-    // POST /ventas/registrar
-    // Body: { idSucursal, idMetodoPago, items: [...] }
-    // ─────────────────────────────────────────────────────────────
     @PostMapping("/registrar")
     public ResponseEntity<?> registrarVenta(
             @RequestBody VentaRequest request,
