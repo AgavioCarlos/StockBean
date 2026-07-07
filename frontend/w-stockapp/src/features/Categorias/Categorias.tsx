@@ -30,7 +30,7 @@ const Categorias: React.FC = () => {
     );
   }
 
-  const isSistemas = userData.cuenta === 'sistemas';
+  // const isSistemas = userData.cuenta === 'sistemas';
 
   return (
     <MainLayout>
@@ -42,14 +42,14 @@ const Categorias: React.FC = () => {
           ]}
           onBack={() => { }}
         />
-
-        {isSistemas ? (
+        <CategoriasGlobales />
+        {/* {isSistemas ? (
           <CategoriasGlobales />
         ) : (
           <div className="mt-4 flex-1">
             <AsignacionCategoria idEmpresa={empresaId} />
           </div>
-        )}
+        )} */}
       </div>
     </MainLayout>
   );

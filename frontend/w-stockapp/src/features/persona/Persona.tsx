@@ -7,13 +7,14 @@ import { FaHome } from "react-icons/fa";
 import { MdDescription, MdPeople } from "react-icons/md";
 import Breadcrumb from "../../components/Breadcrumb";
 import { consultarPersonas, crearPersona, actualizarPersona, eliminarPersona } from "./PersonaService";
-import type { IPersona } from "./persona.interface";
-import { Column } from "../../components/DataTable";
+import type { Persona } from "./persona.interface";
+import { DataTable, Column } from "../../components/DataTable";
 import { StatusBadge } from "../../components/StatusBadge";
-import { PersonaList } from "./components/PersonaList";
 import { PersonaForm } from "./components/PersonaForm";
 import { useCRUD } from "../../hooks/useCRUD";
-// import { PersonaMetricsSidebar } from "./components/PersonaMetricsSidebar";
+import { SharedButton } from '../../components/SharedButton';
+import { IoMdAddCircle } from "react-icons/io";
+import { WithPermission } from '../../components/WithPermission';
 
 export default function Persona() {
   const {
@@ -31,7 +32,7 @@ export default function Persona() {
     handleSubmit,
     handleDeleteOrRestore,
     confirm
-  } = useCRUD<IPersona>({
+  } = useCRUD<Persona>({
     fetchData: consultarPersonas,
     createData: crearPersona,
     updateData: actualizarPersona,
@@ -55,7 +56,7 @@ export default function Persona() {
     defaultStatus: true
   });
 
-  const onRowSelect = (item: IPersona) => {
+  const onRowSelect = (item: Persona) => {
     handleRowClick(item, (p) => ({
       nombre: p.nombre,
       apellido_paterno: p.apellido_paterno,
@@ -76,7 +77,7 @@ export default function Persona() {
     }));
   };
 
-  const columnas = useMemo<Column<IPersona>[]>(() => [
+  const columnas = useMemo<Column<Persona>[]>(() => [
     {
       key: "nombre",
       label: "Nombre completo",
@@ -108,7 +109,7 @@ export default function Persona() {
   ], []);
 
 
-  const onToggleStatus = useCallback((item: IPersona) => {
+  const onToggleStatus = useCallback((item: Persona) => {
     const isDeactivating = item.status;
     confirm(
       "¿Estás seguro?",
@@ -121,48 +122,9 @@ export default function Persona() {
     });
   }, [confirm, handleDeleteOrRestore]);
 
-  const items = useMemo(() => [
-    {
-      key: "lista",
-      label: "Lista",
-      icon: <IoMdList aria-hidden="true" />,
-      content: (
-        <PersonaList
-          data={personasList}
-          columns={columnas}
-          onRowClick={onRowSelect}
-          onNew={newFromDetail}
-          loading={loadingPersonas}
-        />
-      )
-    },
-    {
-      key: "detalle",
-      label: "Detalle",
-      icon: <MdDescription aria-hidden="true" />,
-      content: (
-        <PersonaForm
-          values={values}
-          handleChange={handleChange}
-          isEditing={isEditing}
-          setIsEditing={setIsEditing}
-          onSave={onSave}
-          onNew={newFromDetail}
-          selection={personaSeleccionada}
-          onToggleStatus={onToggleStatus}
-        />
-      )
-    }
-  ], [
-    personasList, columnas, onRowSelect, newFromDetail, loadingPersonas,
-    values, handleChange, isEditing, setIsEditing, onSave, personaSeleccionada,
-    onToggleStatus
-  ]);
-
   const navigate = useNavigate();
 
   return (
-    // <MainLayout rightPanel={<PersonaMetricsSidebar />}>
     <MainLayout>
       <div className="flex flex-col h-full bg-slate-50">
         <Breadcrumb
@@ -175,9 +137,62 @@ export default function Persona() {
 
         <div className="flex-1 overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 relative">
           <Tabs
-            tabs={items}
             activeTab={activeTab}
             onChange={setActiveTab}
+            tabs={[
+              {
+                key: "lista",
+                label: "Lista",
+                icon: <IoMdList aria-hidden="true" />,
+                content: (
+                  <div className="flex flex-col h-full w-full relative">
+                    {loadingPersonas && (
+                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/50 backdrop-blur-[2px] rounded-2xl transition-all duration-300">
+                        <div className="w-8 h-8 border-3 border-blue-600/30 border-t-blue-600 rounded-full animate-spin mb-2" aria-hidden="true"></div>
+                        <span className="text-xs font-medium text-slate-500" aria-live="polite">Actualizando personas…</span>
+                      </div>
+                    )}
+
+                    <DataTable
+                      data={personasList}
+                      columns={columnas}
+                      onRowClick={onRowSelect}
+                      actionContent={
+                        <WithPermission screen="personas" action="create">
+                          <SharedButton
+                            onClick={newFromDetail}
+                            variant="primary"
+                            size="icon"
+                            title="Nueva Persona"
+                            aria-label="Nueva Persona"
+                            icon={<IoMdAddCircle size={28} aria-hidden="true" />}
+                          />
+                        </WithPermission>
+                      }
+                    />
+                  </div>
+                )
+              },
+              {
+                key: "detalle",
+                label: "Detalle",
+                icon: <MdDescription aria-hidden="true" />,
+                content: (
+                  <PersonaForm
+                    values={values}
+                    handleChange={handleChange}
+                    isEditing={isEditing}
+                    setIsEditing={setIsEditing}
+                    onSave={onSave}
+                    onNew={newFromDetail}
+                    selection={personaSeleccionada}
+                    onToggleStatus={onToggleStatus}
+                  />
+                )
+              }
+
+            ]}
+
           />
         </div>
       </div>

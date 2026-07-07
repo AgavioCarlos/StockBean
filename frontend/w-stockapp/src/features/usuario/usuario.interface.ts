@@ -1,4 +1,4 @@
-export interface IPersona {
+export interface Persona {
     id_persona?: number;
     nombre: string;
     apellido_paterno: string;
@@ -8,11 +8,23 @@ export interface IPersona {
     fecha_alta?: string;
 }
 
-export interface IUsuario {
+export interface Usuario {
     id_usuario?: number;
-    persona: IPersona;
+    persona: Persona;
     cuenta: string;
     id_rol: number;
     status: boolean;
     password?: string;
+
+}
+
+export interface UsuarioFormProps {
+    values: any;
+    handleChange: (e: any) => void;
+    isEditing: boolean;
+    setIsEditing: (val: boolean) => void;
+    onSave: (e: React.FormEvent) => void;
+    onNew: () => void;
+    selection: Usuario | null;
+    onToggleStatus: (item: Usuario) => void;
 }

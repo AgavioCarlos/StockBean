@@ -4,32 +4,18 @@ import { SharedButton } from '../../../components/SharedButton';
 import { apiFetch } from '../../../services/Api';
 import Swal from 'sweetalert2';
 
-// ---- Tipos ----
-// interface Pantalla {
-//     idPantalla: number;
-//     nombre: string;
-//     clave: string;
-// }
-
-// interface Accion {
-//     idAccion: number;
-//     nombre: string;
-// }
-
 interface PermisoGuardado {
     idPantalla: number;
     idAccion: number;
     permitido: boolean;
 }
 
-// Cada celda del grid
 interface CeldaPermiso {
     idAccion: number;
     nombreAccion: string;
     permitido: boolean;
 }
 
-// Una fila (pantalla + sus acciones)
 interface FilaPermiso {
     idPantalla: number;
     nombre: string;
@@ -40,9 +26,8 @@ interface FilaPermiso {
 interface UsuarioPermisosProps {
     idUsuario: number;
     idRolUsuario?: number;
+    idSucursal?: number;
 }
-
-// ---- Estilos ----
 const ACCION_COLORS: Record<string, string> = {
     'view': 'bg-sky-50 text-sky-700 border-sky-200',
     'create': 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -53,16 +38,13 @@ const ACCION_COLORS: Record<string, string> = {
 
 const ACCION_LABELS: Record<string, string> = {
     'view': 'Ver',
-    'create': 'Crear',
-    'update': 'Editar',
-    'delete': 'Eliminar',
+    'create': 'Guardar',
+    'update': 'Actualizar',
+    'delete': 'Deshabilitar',
     'export': 'Exportar',
 };
 
-// Acciones que se bloquean cuando "view" está deshabilitado
 const ACCIONES_BLOQUEADAS_SIN_VER = ['create', 'update', 'delete'];
-
-// Orden preferido de acciones (view siempre primero)
 const ACCION_ORDER: Record<string, number> = {
     'view': 0,
     'create': 1,
@@ -70,7 +52,6 @@ const ACCION_ORDER: Record<string, number> = {
     'delete': 3,
 };
 
-// Acciones CRUD hardcodeadas (columnas de admin_usuario_pantalla)
 const ACCIONES_FIJAS: Accion[] = [
     { idAccion: 1, nombre: 'view' },
     { idAccion: 2, nombre: 'create' },
@@ -83,10 +64,8 @@ interface Accion {
     nombre: string;
 }
 
-// ---- Helpers ----
 function getIdEmpresaFromStorage(): number | null {
     try {
-        // 1) Intenta leer id_empresa guardado directamente
         const idDirect = localStorage.getItem('id_empresa');
         if (idDirect && !isNaN(Number(idDirect))) return Number(idDirect);
 
@@ -114,28 +93,29 @@ function getIdEmpresaFromStorage(): number | null {
     return null;
 }
 
-// ---- Componente ----
-export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario, idRolUsuario: _idRolUsuario }) => {
+export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario, idRolUsuario: _idRolUsuario, idSucursal }) => {
     const [matriz, setMatriz] = useState<FilaPermiso[]>([]);
     const [accionesHeader, setAccionesHeader] = useState<Accion[]>([]);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
-    const [idEmpresa] = useState<number | null>(getIdEmpresaFromStorage);
+    const [idEmpresaStorage] = useState<number | null>(getIdEmpresaFromStorage);
+    const idEmpresa = idSucursal || idEmpresaStorage;
 
-    // Cargar pantallas y permisos existentes del usuario
     const cargarDatos = useCallback(async () => {
-        if (!idUsuario || !idEmpresa) return;
+        if (!idUsuario || !idEmpresa) {
+            console.log("UsuarioPermisos: Faltan IDs para cargar datos", { idUsuario, idEmpresa });
+            return;
+        }
+
         setLoading(true);
         try {
-            // 1) Traer pantallas filtradas por esRoot y permisos del usuario
-            const [permisosData] = await Promise.all([
-                apiFetch<any[]>(`/usuarios-acciones/${idUsuario}?idEmpresa=${idEmpresa}`)
-            ]);
+            console.log(`UsuarioPermisos: Cargando permisos para usuario ${idUsuario} y sucursal ${idEmpresa}...`);
+            
+            const permisosData = await apiFetch<any[]>(`/usuarios-acciones/${idUsuario}?idSucursal=${idSucursal}`);
 
             const permisosExistentes = permisosData || [];
 
-            // Usar acciones fijas CRUD
             const accionesOrdenadas = [...ACCIONES_FIJAS].sort((a, b) => {
                 const orderA = ACCION_ORDER[a.nombre] ?? 99;
                 const orderB = ACCION_ORDER[b.nombre] ?? 99;
@@ -143,9 +123,6 @@ export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario, idR
             });
 
             setAccionesHeader(accionesOrdenadas);
-
-            // 2) Construir la matriz desde la respuesta del backend
-            //    El backend ya devuelve las pantallas correctas filtradas por esRoot
             const nuevaMatriz: FilaPermiso[] = permisosExistentes.map(row => ({
                 idPantalla: row.idPantalla,
                 nombre: row.pantallaNombre,
@@ -159,8 +136,15 @@ export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario, idR
 
             setMatriz(nuevaMatriz);
             setHasChanges(false);
+            console.log("UsuarioPermisos: Datos cargados", nuevaMatriz.length, "filas");
         } catch (error) {
             console.error("Error al cargar datos de permisos:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de carga',
+                text: 'No se pudieron recuperar los permisos.',
+                timer: 2000
+            });
         } finally {
             setLoading(false);
         }
@@ -170,20 +154,17 @@ export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario, idR
         cargarDatos();
     }, [cargarDatos]);
 
-    // Determinar si una fila tiene "ver" habilitado
     const tieneVerHabilitado = (row: FilaPermiso): boolean => {
         const accionVer = row.acciones.find(a => a.nombreAccion === 'view');
         return accionVer?.permitido ?? false;
     };
 
-    // Verificar si una acción está bloqueada por falta de "ver"
     const estaAccionBloqueada = (row: FilaPermiso, nombreAccion: string): boolean => {
         if (nombreAccion === 'view') return false; // "view" nunca se bloquea
         if (!ACCIONES_BLOQUEADAS_SIN_VER.includes(nombreAccion)) return false;
         return !tieneVerHabilitado(row);
     };
 
-    // Toggle de un checkbox individual
     const togglePermiso = (idxPantalla: number, idxAccion: number) => {
         setMatriz(prev => {
             const copy = [...prev];
@@ -236,7 +217,7 @@ export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario, idR
                     permitido: a.permitido
                 }))
             );
-            await apiFetch(`/usuarios-acciones/${idUsuario}?idEmpresa=${idEmpresa}`, {
+            await apiFetch(`/usuarios-acciones/${idUsuario}?idSucursal=${idSucursal}`, {
                 method: 'POST',
                 body: JSON.stringify(payload),
             });
@@ -248,8 +229,6 @@ export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario, idR
             setSaving(false);
         }
     };
-
-    // Estados vacíos
     if (!idUsuario) {
         return (
             <div className="flex flex-col items-center justify-center py-16 text-slate-400">
@@ -258,34 +237,13 @@ export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario, idR
             </div>
         );
     }
-
-    if (!idEmpresa) {
-        return (
-            <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-                <MdSecurity size={48} className="mb-3 opacity-40" />
-                <p className="text-sm font-medium">No se encontró una empresa asociada a tu sesión.</p>
-            </div>
-        );
-    }
-
     return (
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 rounded-l-3xl"></div>
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-8 py-5 border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-                        <MdSecurity size={24} />
-                    </div>
-                    <div>
-                        <h4 className="text-lg font-bold text-slate-800">Permisos de Acciones (CRUD)</h4>
-                        <p className="text-xs text-slate-400 font-medium">Controla qué puede hacer este usuario en cada pantalla</p>
-                    </div>
-                </div>
-
+        <div className="flex-1 flex flex-col relative w-full h-full">
+            <div className="absolute top-0 left-0 w-1 h-full  rounded-l-3xl"></div>
+            <div className="flex items-center justify-between">
                 {hasChanges && (
                     <SharedButton
+                        type="button"
                         onClick={guardar}
                         variant="success"
                         size="sm"
@@ -296,12 +254,10 @@ export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario, idR
                     </SharedButton>
                 )}
             </div>
-
-            {/* Body / Grid */}
             <div className="p-6 overflow-x-auto">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-12">
-                        <div className="w-8 h-8 border-3 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mb-2"></div>
+                        <div className="w-8 h-8 border-3 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-2"></div>
                         <span className="text-xs font-medium text-slate-500">Cargando permisos…</span>
                     </div>
                 ) : matriz.length === 0 ? (

@@ -1,6 +1,6 @@
 import React from 'react';
 import { IoIosSave } from "react-icons/io";
-import { MdEdit, MdAdd, MdPowerSettingsNew, MdOutlineDateRange, MdStore, MdBusiness, MdLocalPhone, MdMailOutline, MdLocationOn } from "react-icons/md";
+import { MdEdit, MdAdd, MdPowerSettingsNew, MdOutlineDateRange, MdStore, MdBusiness, MdLocalPhone, MdMailOutline, MdLocationOn, MdPersonOutline } from "react-icons/md";
 import { Sucursal } from '../../../interfaces/sucursal.interface';
 import { SharedInput } from '../../../components/SharedInput';
 import { SharedButton } from '../../../components/SharedButton';
@@ -31,7 +31,6 @@ export const SucursalForm: React.FC<SucursalFormProps> = ({
     return (
         <div className="w-full h-full flex flex-col bg-slate-50/50">
             <form onSubmit={onSave} className="w-full h-full flex flex-col">
-                {/* Header Superior */}
                 <div className="flex items-center justify-between px-8 py-5 bg-white border-b border-gray-100 shrink-0 sticky top-0 z-10 shadow-sm transition-all">
                     <div>
                         <h3 className="text-xl font-bold tracking-tight text-slate-800">
@@ -43,7 +42,6 @@ export const SucursalForm: React.FC<SucursalFormProps> = ({
                             </p>
                         )}
                     </div>
-
                     <div className="flex items-center gap-3">
                         {!isEditing && selection && (
                             <>
@@ -108,12 +106,11 @@ export const SucursalForm: React.FC<SucursalFormProps> = ({
                     </div>
                 </div>
 
-                {/* Formulario Principal */}
-                <div className="flex-1 p-6 md:p-10 overflow-y-auto w-full max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="flex-1 p-6 md:p-10 overflow-y-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-                    {/* Ficha Resumen */}
                     {!isEditing && selection && (
-                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200/60 overflow-hidden relative group">
+                        <div className="bg-white p-8 rounded-3xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 overflow-hidden relative group">
+
                             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                                 <div className="flex items-center gap-6">
                                     <div className="h-20 w-20 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center text-3xl font-black shadow-lg shadow-blue-500/30 transform group-hover:scale-105 transition-transform">
@@ -140,83 +137,60 @@ export const SucursalForm: React.FC<SucursalFormProps> = ({
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-8 gap-8">
                         <div className="lg:col-span-8 bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-l-3xl"></div>
 
                             <div className="flex items-center gap-3 mb-8">
                                 <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                    <MdBusiness size={24} />
+                                    <MdPersonOutline size={24} />
                                 </div>
-                                <h4 className="text-lg font-bold text-slate-800">Información de la Sucursal</h4>
+                                <h4 className="text-lg font-bold text-slate-800">
+                                    Información del Usuario
+                                </h4>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                                <div className="md:col-span-2">
-                                    <SharedInput
-                                        label="Nombre de la Sucursal"
-                                        id="nombre"
-                                        name="nombre"
-                                        value={values.nombre}
-                                        onChange={handleChange}
-                                        isEditing={isEditing}
-                                        placeholder="Ej. Matriz, Sucursal Norte, etc."
-                                    />
-                                </div>
-                                <div className="md:col-span-2">
-                                    <SharedInput
-                                        label="Dirección Completa"
-                                        id="direccion"
-                                        name="direccion"
-                                        value={values.direccion}
-                                        onChange={handleChange}
-                                        isEditing={isEditing}
-                                        placeholder="Calle, número, colonia, etc."
-                                    />
-                                </div>
-                                <div>
-                                    <SharedInput
-                                        label="Teléfono de Contacto"
-                                        id="telefono"
-                                        name="telefono"
-                                        value={values.telefono}
-                                        onChange={handleChange}
-                                        isEditing={isEditing}
-                                        placeholder="000 000 0000"
-                                        icon={<MdLocalPhone size={18} />}
-                                    />
-                                </div>
-                                <div>
-                                    <SharedInput
-                                        label="Email de la Sucursal"
-                                        id="email"
-                                        name="email"
-                                        type="email"
-                                        value={values.email}
-                                        onChange={handleChange}
-                                        isEditing={isEditing}
-                                        placeholder="sucursal@ejemplo.com"
-                                        icon={<MdMailOutline size={18} />}
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                                <SharedInput
+                                    label="Usuario"
+                                    id="username"
+                                    name="username"
+                                    value={values.username}
+                                    onChange={handleChange}
+                                    isEditing={isEditing}
+                                    placeholder="Ej. admin"
+                                />
 
-                        <div className="lg:col-span-4 space-y-6">
-                            <div className="bg-white p-7 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
-                                <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">Estado del Sistema</h4>
-                                <div className="space-y-5 cursor-default">
-                                    <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
-                                        <span className="text-sm font-semibold text-slate-600">Estatus</span>
-                                        <StatusBadge status={values.status ?? true} trueText="Activo" falseText="Inactivo" />
-                                    </div>
-                                    <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
-                                        <span className="text-sm font-semibold text-slate-600">Alta</span>
-                                        <span className="text-sm font-bold text-slate-800">
-                                            {values.fechaAlta ? new Date(values.fechaAlta).toLocaleDateString() : 'Proceso de alta'}
-                                        </span>
-                                    </div>
-                                </div>
+                                <SharedInput
+                                    label="Correo Electrónico"
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    value={values.email}
+                                    onChange={handleChange}
+                                    isEditing={isEditing}
+                                    placeholder="usuario@empresa.com"
+                                />
+
+                                <SharedInput
+                                    label="Nombre"
+                                    id="nombre"
+                                    name="nombre"
+                                    value={values.nombre}
+                                    onChange={handleChange}
+                                    isEditing={isEditing}
+                                    placeholder="Ej. Carlos"
+                                />
+
+                                <SharedInput
+                                    label="Rol"
+                                    id="rol"
+                                    name="rol"
+                                    value={values.rol}
+                                    onChange={handleChange}
+                                    isEditing={isEditing}
+                                    placeholder="Ej. Administrador"
+                                />
                             </div>
                         </div>
                     </div>

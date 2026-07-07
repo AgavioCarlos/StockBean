@@ -2,12 +2,12 @@ import React from 'react';
 import { DataTable, Column } from '../../../components/DataTable';
 import { SharedButton } from '../../../components/SharedButton';
 import { IoMdAddCircle } from "react-icons/io";
-import type { IUsuario } from '../usuario.interface';
+import type { Usuario } from '../usuario.interface';
 
 interface UsuarioListProps {
-    data: IUsuario[];
-    columns: Column<IUsuario>[];
-    onRowClick: (item: IUsuario) => void;
+    data: Usuario[];
+    columns: Column<Usuario>[];
+    onRowClick: (item: Usuario) => void;
     onNew: () => void;
     loading?: boolean;
 }

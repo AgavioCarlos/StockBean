@@ -1,7 +1,7 @@
 import MainLayout from "../../components/Layouts/MainLayout";
 import Tabs from "../../components/Tabs";
 import { useState, useEffect, useMemo } from "react";
-import { useEmpresaEstilos } from "../../hooks/useEmpresaEstilos";
+import { useStyles } from "../../hooks/useStyles";
 import { saveDisenoEmpresa, EmpresaDiseno, uploadLogoEmpresa } from "../../services/EmpresaDisenoService";
 import { useAlertContext } from "../../context/AlertContext";
 import { FiRefreshCw, FiImage, FiType, FiDroplet, FiBox } from "react-icons/fi";
@@ -16,7 +16,7 @@ const PRESET_PALETTES = [
 ];
 
 function Configuracion() {
-    const { diseno: disenoActual, recargarEstilos } = useEmpresaEstilos();
+    const { styles: disenoActual, recargarEstilos } = useStyles();
     const { addToast } = useAlertContext();
     const [vista, setVista] = useState("database");
     const [loading, setLoading] = useState(false);
@@ -233,7 +233,7 @@ function Configuracion() {
                                                     </div>
                                                     {/* <InputItem label="URL Favicon" name="urlFavicon" value={formDiseno.urlFavicon || ''} onChange={handleInputChange} placeholder="https://..." /> */}
                                                 </div>
-                                            </Section>  
+                                            </Section>
                                         </div>
                                     </div>
 

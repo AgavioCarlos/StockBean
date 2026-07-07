@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAlerts } from '../../../hooks/useAlerts';
-import { obtenerCajasPorSucursal, abrirCaja } from '../CajaService';
+import { obtenerCajas, abrirCaja } from '../CajaService';
 import type { ICaja, ITurnoCaja } from '../punto_venta.interface';
 
 interface Props {
-    idSucursal: number;
     onAperturaExitosa: (turno: ITurnoCaja) => void;
     onClose: () => void;
 }
 
-const AperturaCajaModal: React.FC<Props> = ({ idSucursal, onAperturaExitosa, onClose }) => {
+const AperturaCajaModal: React.FC<Props> = ({onAperturaExitosa, onClose }) => {
     const { error: showError, success } = useAlerts();
     const [cajas, setCajas] = useState<ICaja[]>([]);
     const [cargandoCajas, setCargandoCajas] = useState(true);
@@ -21,7 +20,7 @@ const AperturaCajaModal: React.FC<Props> = ({ idSucursal, onAperturaExitosa, onC
     useEffect(() => {
         const cargarCajas = async () => {
             try {
-                const data = await obtenerCajasPorSucursal(idSucursal);
+                const data = await obtenerCajas();
                 setCajas(data);
                 if (data.length === 1) {
                     setIdCajaForm(data[0].idCaja);
@@ -33,10 +32,8 @@ const AperturaCajaModal: React.FC<Props> = ({ idSucursal, onAperturaExitosa, onC
                 setCargandoCajas(false);
             }
         };
-        if (idSucursal) {
-            cargarCajas();
-        }
-    }, [idSucursal, showError]);
+        cargarCajas();
+    }, [, showError]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

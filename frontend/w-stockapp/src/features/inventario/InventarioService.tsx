@@ -3,8 +3,9 @@ import type { IInventario } from "./inventario.interface";
 
 const ENDPOINT = "/inventario";
 
-export const consultarInventario = async (idSucursal: number): Promise<IInventario[]> => {
-    return await apiFetch<IInventario[]>(`${ENDPOINT}?idSucursal=${idSucursal}`) || [];
+export const consultarInventario = async (idSucursal?: number): Promise<IInventario[]> => {
+    const url = idSucursal ? `${ENDPOINT}?idSucursal=${idSucursal}` : ENDPOINT;
+    return await apiFetch<IInventario[]>(url) || [];
 };
 
 export const crearInventario = async (data: Partial<IInventario>): Promise<IInventario> => {

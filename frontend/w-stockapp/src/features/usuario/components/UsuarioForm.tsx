@@ -1,25 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { IoIosSave, IoMdKey } from "react-icons/io";
 import { MdEdit, MdAdd, MdPowerSettingsNew, MdOutlineDateRange, MdPersonOutline, MdOutlineEmail, MdOutlineAdminPanelSettings } from "react-icons/md";
-import type { IUsuario, IPersona } from '../usuario.interface';
+import type { Usuario, Persona } from '../usuario.interface';
 import { SharedInput } from '../../../components/SharedInput';
 import { SharedButton } from '../../../components/SharedButton';
 import { StatusBadge } from '../../../components/StatusBadge';
 import { consultarRoles } from '../../../services/Roles';
 import { consultarPersonas } from '../../Persona/PersonaService';
-import { UsuarioPermisos } from './UsuarioPermisos';
 import { UsuarioSucursales } from './UsuarioSucursales';
+import { UsuarioFormProps } from '../usuario.interface';
 
-interface UsuarioFormProps {
-    values: any;
-    handleChange: (e: any) => void;
-    isEditing: boolean;
-    setIsEditing: (val: boolean) => void;
-    onSave: (e: React.FormEvent) => void;
-    onNew: () => void;
-    selection: IUsuario | null;
-    onToggleStatus: (item: IUsuario) => void;
-}
+
 
 export const UsuarioForm: React.FC<UsuarioFormProps> = ({
     values,
@@ -32,14 +23,14 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
     onToggleStatus
 }) => {
     const [roles, setRoles] = useState<any[]>([]);
-    const [personas, setPersonas] = useState<IPersona[]>([]);
+    const [personas, setPersonas] = useState<Persona[]>([]);
 
     useEffect(() => {
         consultarRoles().then(setRoles).catch(console.error);
         consultarPersonas().then(setPersonas).catch(console.error);
     }, []);
 
-    const persona = values.persona || {} as IPersona;
+    const persona = values.persona || {} as Persona;
 
     const handlePersonaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -55,81 +46,77 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
     };
 
     return (
-        <div className="w-full h-full flex flex-col bg-slate-50/50">
-            <form onSubmit={onSave} className="w-full h-full flex flex-col">
-                {/* Header Superior */}
-                <div className="flex items-center justify-between px-8 py-5 bg-white border-b border-gray-100 shrink-0 sticky top-0 z-10 shadow-sm transition-all">
-                    <div>
-                        <h3 className="text-xl font-bold tracking-tight text-slate-800">
-                            {selection ? "Ficha de Usuario" : "Añadir Nuevo Usuario"}
-                        </h3>
-                        {selection && (
-                            <p className="text-sm font-medium text-slate-500 mt-0.5">
-                                Identificador: #{selection.id_usuario?.toString().padStart(4, '0')}
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        {!isEditing && selection && (
-                            <>
-                                <SharedButton
-                                    type="button"
-                                    variant={selection.status ? 'danger' : 'success'}
-                                    className={`shadow-sm transition-all ${selection.status ? 'hover:bg-red-50 hover:text-red-700 hover:border-red-200' : 'hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'}`}
-                                    onClick={() => onToggleStatus(selection)}
-                                    title={selection.status ? "Desactivar Usuario" : "Reactivar Usuario"}
-                                    aria-label={selection.status ? "Desactivar" : "Reactivar"}
-                                    icon={<MdPowerSettingsNew size={20} aria-hidden="true" />}
-                                >
-                                    {selection.status ? '' : ''}
-                                </SharedButton>
-
-                                <SharedButton
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setIsEditing(true)}
-                                    title="Editar"
-                                    aria-label="Editar"
-                                    icon={<MdEdit size={20} aria-hidden="true" />}
-                                >
-                                </SharedButton>
-                            </>
-                        )}
-
-                        {isEditing && (
-                            <SharedButton
-                                type="submit"
-                                variant="primary"
-                                className="shadow-md shadow-blue-500/20"
-                                title="Guardar Usuario"
-                                aria-label="Guardar Usuario"
-                                icon={<IoIosSave size={20} aria-hidden="true" />}
-                            >
-                                Guardar
-                            </SharedButton>
-                        )}
-
-                        {!isEditing && (
-                            <SharedButton
-                                type="button"
-                                variant="primary"
-                                className="shadow-md shadow-blue-500/20"
-                                onClick={onNew}
-                                title="Agregar"
-                                aria-label="Agregar"
-                                icon={<MdAdd size={22} aria-hidden="true" />}
-                            >
-                                Agregar
-                            </SharedButton>
-                        )}
-                    </div>
+        <div className="w-full h-full flex flex-col bg-slate-50/50 overflow-hidden">
+            <div className="flex items-center justify-between px-8 py-5 bg-white border-b border-gray-100 shrink-0 sticky top-0 z-10 shadow-sm transition-all">
+                <div>
+                    <h3 className="text-xl font-bold tracking-tight text-slate-800">
+                        {selection ? "Ficha de Usuario" : "Añadir Nuevo Usuario"}
+                    </h3>
+                    {selection && (
+                        <p className="text-sm font-medium text-slate-500 mt-0.5">
+                            Identificador: #{selection.id_usuario?.toString().padStart(4, '0')}
+                        </p>
+                    )}
                 </div>
 
-                {/* Formulario Principal */}
-                <div className="flex-1 p-6 md:p-10 overflow-y-auto w-full max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="flex items-center gap-3">
+                    {!isEditing && selection && (
+                        <>
+                            <SharedButton
+                                type="button"
+                                variant={selection.status ? 'danger' : 'success'}
+                                className={`shadow-sm transition-all ${selection.status ? 'hover:bg-red-50 hover:text-red-700 hover:border-red-200' : 'hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'}`}
+                                onClick={() => onToggleStatus(selection)}
+                                title={selection.status ? "Desactivar Usuario" : "Reactivar Usuario"}
+                                aria-label={selection.status ? "Desactivar" : "Reactivar"}
+                                icon={<MdPowerSettingsNew size={20} aria-hidden="true" />}
+                            >
+                                {selection.status ? '' : ''}
+                            </SharedButton>
 
-                    {/* Ficha Resumen */}
+                            <SharedButton
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsEditing(true)}
+                                title="Editar"
+                                aria-label="Editar"
+                                icon={<MdEdit size={20} aria-hidden="true" />}
+                            >
+                            </SharedButton>
+                        </>
+                    )}
+
+                    {isEditing && (
+                        <SharedButton
+                            type="submit"
+                            form="usuario-form"
+                            variant="primary"
+                            className="shadow-md shadow-blue-500/20"
+                            title="Guardar Usuario"
+                            aria-label="Guardar Usuario"
+                            icon={<IoIosSave size={20} aria-hidden="true" />}
+                        >
+                            Guardar
+                        </SharedButton>
+                    )}
+
+                    {!isEditing && (
+                        <SharedButton
+                            type="button"
+                            variant="primary"
+                            className="shadow-md shadow-blue-500/20"
+                            onClick={onNew}
+                            title="Agregar"
+                            aria-label="Agregar"
+                            icon={<MdAdd size={22} aria-hidden="true" />}
+                        >
+                            Agregar
+                        </SharedButton>
+                    )}
+                </div>
+            </div>
+
+            <div className="flex-1 p-6 md:p-10 overflow-y-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {!isEditing && selection && (
                         <div className="bg-white p-8 rounded-3xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 overflow-hidden relative group">
                             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full blur-3xl -mx-20 -my-20 opacity-50 pointer-events-none group-hover:opacity-70 transition-opacity"></div>
@@ -165,7 +152,7 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <form id="usuario-form" onSubmit={onSave} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Panel de Datos Personales y de Cuenta */}
                         <div className="lg:col-span-8 space-y-8">
                             {/* Información Personal */}
@@ -322,16 +309,11 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Módulo de Sucursales - Visible cuando hay un usuario seleccionado */}
+                    </form>
                     {selection?.id_usuario && (
-                        <UsuarioSucursales idUsuario={selection.id_usuario} />
-                    )}
-
-                    {/* Módulo de Permisos CRUD - Visible cuando hay un usuario seleccionado */}
-                    {selection?.id_usuario && (
-                        <UsuarioPermisos idUsuario={selection.id_usuario} />
+                        <div className="pt-4">
+                            <UsuarioSucursales idUsuario={selection.id_usuario} />
+                        </div>
                     )}
 
                     {/* Mensaje de Asistencia (Solo visible si esEditing) */}
@@ -342,7 +324,6 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                         </div>
                     </div>
                 </div>
-            </form>
         </div>
     );
 };

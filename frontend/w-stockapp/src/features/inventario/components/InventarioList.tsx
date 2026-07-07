@@ -1,9 +1,9 @@
 import React from 'react';
 import { DataTable, Column } from '../../../components/DataTable';
-import { BranchFilter } from '../../../components/BranchFilter';
 import { IoMdAddCircle } from "react-icons/io";
 import { IInventario } from '../inventario.interface';
-import { StatusBadge, StockBadge } from '../../../components/StatusBadge';
+import { SectionHeader } from '../../../components/ui/SectionHeader';
+import { SharedButton } from '../../../components/SharedButton';
 
 interface InventarioListProps {
     data: IInventario[];
@@ -25,41 +25,42 @@ export const InventarioList: React.FC<InventarioListProps> = ({
     loading
 }) => {
     return (
-        <div className="flex flex-col h-full">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4 p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
-                <BranchFilter
-                    onBranchChange={onBranchChange}
-                    value={idSucursal}
-                />
+        <div className="p-6 pt-2 flex flex-col h-full relative">
+            <SectionHeader
+                title=""
+                className="border-none mb-4"
+                actions={
+                    <div className="flex items-center gap-2">
+                        <div className="h-6 w-px bg-slate-200 mx-1"></div>
+                        <SharedButton onClick={onNew} variant="primary" icon={<IoMdAddCircle size={20} />}></SharedButton>
+                    </div>
+                }
+            />
 
-                <div className="mt-4 md:mt-0">
-                    <button
-                        onClick={onNew}
-                        disabled={!idSucursal}
-                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm font-medium ${!idSucursal
-                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                            : "bg-blue-600 hover:bg-blue-700 text-white"
-                            }`}
-                    >
-                        <IoMdAddCircle size={20} />
-                        <span>Nuevo</span>
-                    </button>
-                </div>
-            </div>
 
-            <div className="mt-2 relative">
+            <div className="relative bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden z-10">
                 {loading && (
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/50 backdrop-blur-[2px] rounded-lg transition-all duration-300">
-                        <div className="w-8 h-8 border-3 border-blue-600/30 border-t-blue-600 rounded-full animate-spin mb-2"></div>
-                        <span className="text-xs font-medium text-slate-500">Actualizando inventario…</span>
+                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/60 backdrop-blur-[1px] transition-all duration-300">
+                        <div className="w-10 h-10 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
+                        <span className="text-xs font-bold text-indigo-500/80 uppercase tracking-widest animate-pulse">Sincronizando...</span>
                     </div>
                 )}
+
                 <DataTable
                     data={data}
                     columns={columns}
-                    title="Listado de Stock"
                     onRowClick={onRowClick}
                 />
+
+                {data.length === 0 && !loading && (
+                    <div className="p-20 text-center">
+                        <p className="text-slate-400 italic text-sm">
+                            {idSucursal
+                                ? "No se encontraron productos en esta sucursal."
+                                : "Selecciona una sucursal para ver las existencias."}
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     );

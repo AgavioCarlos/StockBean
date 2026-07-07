@@ -1,4 +1,5 @@
 export interface LoginData {
+  sucursal: string;
   cuenta: string;
   password: string;
 }

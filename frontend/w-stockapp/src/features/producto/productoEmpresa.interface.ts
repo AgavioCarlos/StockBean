@@ -1,6 +1,6 @@
 import { Productos as IProducto } from "../Producto/producto.interface";
 
-export interface IProductoEmpresa {
+export interface ProductoEmpresa {
     idProductoEmpresa?: number;
     producto?: IProducto;
     precioCompra: number;

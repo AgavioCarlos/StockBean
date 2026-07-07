@@ -8,15 +8,12 @@ import type {
     IMovimientoCaja
 } from "./punto_venta.interface";
 
-export const obtenerCajasPorSucursal = async (idSucursal: number): Promise<ICaja[]> => {
+export const obtenerCajas = async (): Promise<ICaja[]> => {
     try {
-        return await apiFetch<ICaja[]>(`/cajas/sucursal/${idSucursal}`) || [];
+        return await apiFetch<ICaja[]>(`/cajas/sucursal`) || [];
     } catch (error) {
-        console.warn("API de cajas no lista, usando data falsa temporara", error);
-        return [
-            { idCaja: 1, idSucursal, nombre: "Caja 1 - Principal", activa: true },
-            { idCaja: 2, idSucursal, nombre: "Caja 2 - Rápida", activa: true },
-        ];
+        console.error("Error al obtener cajas", error);
+        return [];
     }
 };
 
@@ -37,7 +34,6 @@ export const abrirCaja = async (request: IAperturaCajaRequest): Promise<ITurnoCa
         }) as ITurnoCaja;
     } catch (error: any) {
         console.error("Error al abrir la caja", error);
-        // Retornamos un dummy para que el frontend siga funcionando mientras el backend no está
         return {
             idTurno: 999,
             idUsuario: 1,

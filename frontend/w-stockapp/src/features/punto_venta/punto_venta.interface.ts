@@ -26,7 +26,7 @@ export interface ICarritoItem {
 }
 
 export interface IVentaRequest {
-    idSucursal: number;
+    // idSucursal: number;
     idMetodoPago: number;
     items: {
         idProducto: number;
@@ -56,7 +56,6 @@ export interface IVentaResponse {
 
 export interface ICaja {
     idCaja: number;
-    idSucursal: number;
     nombre: string;
     activa: boolean;
 }

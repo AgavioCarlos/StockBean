@@ -1,59 +1,32 @@
 import { useState, useMemo, type ChangeEvent } from "react";
-import { 
-    consultarProductos, 
-    crearProducto, 
-    actualizarProducto 
-} from "./ProductosService";
-import type { Productos } from "./producto.interface";
-
-import { 
-    IoMdAddCircle, 
-    IoMdList, 
-    IoIosSave 
-} from "react-icons/io";
+import { consultarProductos, crearProducto, actualizarProducto } from "./ProductosService";
+import { Productos } from "./producto.interface";
+import { IoMdAddCircle, IoMdList, IoIosSave } from "react-icons/io";
 import { MdDescription } from "react-icons/md";
-
 import { useCRUD } from "../../hooks/useCRUD";
 import { useLOVs } from "../../hooks/useLOVs";
-
 import Tabs from "../../components/Tabs";
 import { DataTable, type Column } from "../../components/DataTable";
 import { SharedButton, PdfButton, ExcelButton } from "../../components/SharedButton";
 import { StatusBadge } from "../../components/StatusBadge";
 import StatusFilter from "../../components/StatusFilter";
 import { RefreshButton } from "../../components/RefreshButton";
-
-import { 
-    PageContainer, 
-    SectionHeader, 
-    LoadingOverlay, 
-    EmptyState 
-} from "../../components/ui";
+import { PageContainer, SectionHeader, LoadingOverlay, EmptyState } from "../../components/ui";
 import { ProductosForm } from "./components/ProductosForm";
 
-/**
- * Pantalla principal del catálogo de Productos.
- * Refactorizada para usar useCRUD y componentes UI estandarizados.
- */
 function ProductosPage() {
     const [filtroEstado, setFiltroEstado] = useState(true);
     const [imagenUrlPreview, setImagenUrlPreview] = useState("");
+    const { data: lovs, loading: loadingLovs } = useLOVs(["categorias", "marcas", "unidades", "productos"]);
 
-    // 1. Cargar Catálogos (LOVs) con Caché
-    const { data: lovs, loading: loadingLovs } = useLOVs([
-        "categoriasAsignadas", 
-        "marcas", 
-        "unidades"
-    ]);
-
-    // 2. Mapear opciones para los selectores
     interface LovOption {
         value: string | number;
         label: string;
+        [key: string]: any;
     }
 
     const lovOptions = useMemo(() => ({
-        categorias: (lovs.categoriasAsignadas || []).map((c: any): LovOption => ({
+        categorias: (lovs.categorias || []).map((c: any): LovOption => ({
             value: c.idCategoria ?? c.id,
             label: c.nombre
         })),
@@ -64,12 +37,14 @@ function ProductosPage() {
         unidades: (lovs.unidades || []).map((u: any): LovOption => ({
             value: u.idUnidad ?? u.id,
             label: u.nombre
+        })),
+        productos: (lovs.productos || []).map((p: any): LovOption => ({
+            ...p,
+            value: p.idProducto ?? p.id,
+            label: p.nombre
         }))
     }), [lovs]);
 
-    // 3. Sistema CRUD Centralizado
-    // Los servicios usan un payload extendido (idCategoria/idMarca/idUnidad planos)
-    // que no está en la interfaz Productos, por eso se castean como any.
     const crud = useCRUD<Productos>({
         fetchData: consultarProductos,
         createData: crearProducto as any,
@@ -103,7 +78,6 @@ function ProductosPage() {
         handleDeleteOrRestore
     } = crud;
 
-    // 4. Handlers de Imagen
     const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -113,8 +87,7 @@ function ProductosPage() {
         }
     };
 
-    // 5. Filtrado local de la tabla
-    const rowDataFiltrada = useMemo(() => 
+    const rowDataFiltrada = useMemo(() =>
         dataList.filter(p => (p.status === filtroEstado)),
         [dataList, filtroEstado]
     );
@@ -152,10 +125,7 @@ function ProductosPage() {
 
     return (
         <PageContainer
-            breadcrumbs={[
-                { label: "Catálogos", onClick: () => {} },
-                { label: "Productos" }
-            ]}
+            breadcrumbs={[{ label: "Catálogos", onClick: () => { } }, { label: "Productos" }]}
         >
             <div className="bg-white rounded-card shadow-card border border-empresa overflow-hidden flex flex-col h-[calc(100vh-180px)]">
                 <Tabs
@@ -164,27 +134,23 @@ function ProductosPage() {
                     tabs={[
                         {
                             key: "lista",
-                            label: "Lista de Productos",
+                            label: "Productos",
                             icon: <IoMdList />,
                             content: (
                                 <div className="p-6 pt-2 flex flex-col h-full relative">
-                                    <SectionHeader 
-                                        title="Inventario de Productos"
-                                        subtitle={`${rowDataFiltrada.length} productos registrados bajo este filtro.`}
+                                    <SectionHeader
+                                        title="Inventario"
+                                        subtitle={`${rowDataFiltrada.length} productos registrados.`}
                                         className="border-none mb-4"
                                         actions={
                                             <div className="flex items-center gap-2">
                                                 <StatusFilter status={filtroEstado} onChange={setFiltroEstado} />
                                                 <div className="h-6 w-px bg-slate-200 mx-1"></div>
                                                 <RefreshButton onRefresh={refreshData} showText={false} />
-                                                <PdfButton onClick={() => {}} />
-                                                <ExcelButton onClick={() => {}} />
-                                                <SharedButton
-                                                    onClick={crud.newFromDetail}
-                                                    variant="primary"
-                                                    icon={<IoMdAddCircle size={20} />}
-                                                >
-                                                    Agregar Producto
+                                                <PdfButton onClick={() => { }} />
+                                                <ExcelButton onClick={() => { }} />
+                                                <SharedButton onClick={crud.newFromDetail} variant="primary" icon={<IoMdAddCircle size={20} />}>
+                                                    Agregar
                                                 </SharedButton>
                                             </div>
                                         }
@@ -192,9 +158,9 @@ function ProductosPage() {
 
                                     <div className="flex-1 overflow-hidden relative">
                                         {loading && <LoadingOverlay message="Cargando productos..." />}
-                                        
+
                                         {!loading && rowDataFiltrada.length === 0 ? (
-                                            <EmptyState 
+                                            <EmptyState
                                                 icon={<IoMdAddCircle size={32} />}
                                                 title="No se encontraron productos"
                                                 description={filtroEstado ? "No hay productos activos registrados todavía." : "No hay productos inactivos."}
@@ -221,30 +187,29 @@ function ProductosPage() {
                         },
                         {
                             key: "detalle",
-                            label: selectedItem ? "Ficha Técnica" : "Nuevo Producto",
+                            label: selectedItem ? "Detalle" : "Nuevo",
                             icon: <MdDescription />,
                             content: (
-                                <form 
+                                <form
                                     className="p-6 pt-2 flex flex-col h-full bg-white relative"
                                     onSubmit={(e) => crud.handleSubmit(e, (vals) => vals)}
                                 >
-                                    <SectionHeader 
+                                    <SectionHeader
                                         title={selectedItem ? `Producto: ${selectedItem.nombre}` : "Registrar Producto"}
-                                        subtitle="Gestiona la información base del producto."
                                         className="border-none mb-6"
                                         actions={
                                             <div className="flex items-center gap-3">
                                                 {selectedItem && (
                                                     <>
                                                         {!isEditing && (
-                                                            <SharedButton 
-                                                                variant="secondary" 
+                                                            <SharedButton
+                                                                variant="secondary"
                                                                 onClick={() => setIsEditing(true)}
                                                             >
                                                                 Editar
                                                             </SharedButton>
                                                         )}
-                                                        <SharedButton 
+                                                        <SharedButton
                                                             variant={selectedItem.status ? "danger" : "success"}
                                                             onClick={() => handleDeleteOrRestore(selectedItem)}
                                                             title={selectedItem.status ? "Desactivar" : "Reactivar"}
@@ -253,11 +218,11 @@ function ProductosPage() {
                                                         </SharedButton>
                                                     </>
                                                 )}
-                                                
+
                                                 {isEditing && (
-                                                    <SharedButton 
-                                                        type="submit" 
-                                                        variant="success" 
+                                                    <SharedButton
+                                                        type="submit"
+                                                        variant="success"
                                                         icon={<IoIosSave size={20} />}
                                                     >
                                                         Guardar Cambios
@@ -268,7 +233,7 @@ function ProductosPage() {
                                     />
 
                                     <div className="flex-1 overflow-auto">
-                                        <ProductosForm 
+                                        <ProductosForm
                                             values={values}
                                             handleChange={handleChange}
                                             setValues={setValues}

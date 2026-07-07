@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import MainLayout from "../../components/Layouts/MainLayout";
-import { BranchFilter } from "../../components/BranchFilter";
 import { TbBarcode } from "react-icons/tb";
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
 import { FiShoppingCart } from "react-icons/fi";
@@ -15,7 +14,7 @@ import PanelPago from "./components/PanelPago";
 import AperturaCajaModal from "./components/AperturaCajaModal";
 import CierreCajaModal from "./components/CierreCajaModal";
 import MovimientoCajaModal from "./components/MovimientoCajaModal";
-import { FiRefreshCcw, FiChevronDown, FiLogOut, FiDollarSign } from "react-icons/fi";
+import { FiChevronDown, FiLogOut, FiDollarSign } from "react-icons/fi";
 
 function PuntoVenta() {
     const { user } = useAuth();
@@ -46,7 +45,6 @@ function PuntoVenta() {
     const [cargandoTurno, setCargandoTurno] = useState(true);
     const menuCajaRef = useRef<HTMLDivElement>(null);
 
-    // Cargar turno activo al iniciar
     useEffect(() => {
         const fetchTurno = async () => {
             try {
@@ -54,11 +52,9 @@ function PuntoVenta() {
                 const turno = await obtenerTurnoActivo();
                 if (turno && turno.estado === 'ABIERTO') {
                     setTurnoActivo(turno);
-                    // Si el backend viene con caja.idSucursal, lo podriamos asignar:
-                    // if(turno.caja?.idSucursal) setIdSucursal(turno.caja.idSucursal);
                 } else {
                     setTurnoActivo(null);
-                    setMostrarModalCaja(true); // Opcional: mostrar de inmediato si no hay turno
+                    setMostrarModalCaja(true);
                 }
             } catch (err) {
                 console.error("Error al cargar turno", err);
@@ -69,7 +65,6 @@ function PuntoVenta() {
         fetchTurno();
     }, []);
 
-    // Cerrar resultados al hacer clic fuera
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
@@ -83,31 +78,28 @@ function PuntoVenta() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // ─── Búsqueda ───────────────────────────────────────────
     const ejecutarBusqueda = useCallback(async (texto: string) => {
-        if (!idSucursal || !texto.trim()) {
-            setResultados([]);
-            setMostrarResultados(false);
-            return;
-        }
+        // if (!idSucursal || !texto.trim()) {
+        //     setResultados([]);
+        //     setMostrarResultados(false);
+        //     return;
+        // }
 
         setBuscando(true);
         setMostrarResultados(true);
 
         try {
-            // Si parece código de barras (solo números, >= 4 caracteres)
             const esCodigoBarras = /^\d{4,}$/.test(texto.trim());
             let results: IProductoBusqueda[];
 
             if (esCodigoBarras) {
                 results = await buscarPorCodigoBarras(Number(idSucursal), texto.trim());
             } else {
-                results = await buscarPorNombre(Number(idSucursal), texto.trim());
+                results = await buscarPorNombre(texto.trim());
             }
 
             setResultados(results);
 
-            // Si código de barras y un solo resultado, agregar directo al carrito
             if (esCodigoBarras && results.length === 1) {
                 agregarAlCarrito(results[0]);
                 setCodigo("");
@@ -126,7 +118,6 @@ function PuntoVenta() {
         const val = e.target.value;
         setCodigo(val);
 
-        // Debounce para búsqueda por nombre (300ms)
         if (debounceRef.current) clearTimeout(debounceRef.current);
 
         if (val.trim().length >= 2) {
@@ -150,13 +141,11 @@ function PuntoVenta() {
         }
     }, [codigo, ejecutarBusqueda]);
 
-    // ─── Carrito ─────────────────────────────────────────────
     const agregarAlCarrito = useCallback((producto: IProductoBusqueda) => {
         setCarrito(prev => {
             const existente = prev.find(item => item.idProducto === producto.idProducto);
 
             if (existente) {
-                // Verificar stock
                 if (existente.cantidad >= producto.stockDisponible) {
                     warning("Stock insuficiente", `Solo hay ${producto.stockDisponible} unidades de "${producto.nombre}"`);
                     return prev;
@@ -213,7 +202,6 @@ function PuntoVenta() {
         setCarrito(prev => prev.filter(item => item.idProducto !== idProducto));
     }, []);
 
-    // ─── Pago ────────────────────────────────────────────────
     const totalAmount = carrito.reduce((acc, item) => acc + item.subtotal, 0);
 
     const handlePagar = useCallback(async (idMetodoPago: number) => {
@@ -222,10 +210,10 @@ function PuntoVenta() {
             setMostrarModalCaja(true);
             return;
         }
-        if (!idSucursal) {
-            warning("Atención", "Selecciona una sucursal antes de pagar.");
-            return;
-        }
+        // if (!idSucursal) {
+        //     warning("Atención", "Selecciona una sucursal antes de pagar.");
+        //     return;
+        // }
         if (carrito.length === 0) {
             warning("Atención", "Agrega productos al carrito antes de pagar.");
             return;
@@ -234,7 +222,7 @@ function PuntoVenta() {
         setProcesando(true);
 
         const request: IVentaRequest = {
-            idSucursal: Number(idSucursal),
+            // idSucursal: Number(idSucursal),
             idMetodoPago,
             items: carrito.map(item => ({
                 idProducto: item.idProducto,
@@ -262,9 +250,7 @@ function PuntoVenta() {
     return (
         <MainLayout>
             <div className="h-[calc(100vh-100px)] flex flex-col gap-4">
-                {/* Top bar: Branch Filter + Barcode Search */}
                 <div className="flex flex-col sm:flex-row gap-3">
-                    {/* Branch filter */}
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between px-4 py-3 min-w-48 relative" ref={menuCajaRef}>
                         {turnoActivo ? (
                             <div className="flex items-center justify-between w-full">
@@ -281,7 +267,6 @@ function PuntoVenta() {
                                     <FiChevronDown size={20} className={`transform transition-transform ${mostrarMenuCaja ? 'rotate-180' : ''}`} />
                                 </button>
 
-                                {/* Dropdown Menu */}
                                 {mostrarMenuCaja && (
                                     <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                                         <button
@@ -308,16 +293,16 @@ function PuntoVenta() {
                             </div>
                         ) : (
                             <div className="flex flex-col flex-1">
-                                <BranchFilter
+                                {/* <BranchFilter
                                     onBranchChange={setIdSucursal}
                                     value={idSucursal}
                                     labelSucursal=""
                                     placeholderSucursal="Sucursal..."
-                                />
+                                /> */}
                             </div>
                         )}
 
-                        {!turnoActivo && idSucursal && (
+                        {!turnoActivo && (
                             <button
                                 onClick={() => setMostrarModalCaja(true)}
                                 className="ml-3 px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium text-sm rounded-lg transition-colors whitespace-nowrap"
@@ -327,7 +312,6 @@ function PuntoVenta() {
                         )}
                     </div>
 
-                    {/* Search bar */}
                     <div ref={searchRef} className="flex-1 relative">
                         <div className="bg-white px-4 py-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
                             <div className="bg-indigo-50 p-2.5 rounded-xl text-indigo-500 flex-shrink-0">
@@ -340,15 +324,13 @@ function PuntoVenta() {
                                 onChange={handleInputChange}
                                 onKeyDown={handleKeyDown}
                                 onFocus={() => { if (resultados.length > 0) setMostrarResultados(true); }}
-                                placeholder={idSucursal ? "Escanear código de barras o buscar por nombre..." : "Selecciona una sucursal primero..."}
-                                disabled={!idSucursal}
+                                placeholder={"Escanear código de barras o buscar por nombre..."}
+                                // disabled={!idSucursal}
                                 className="w-full text-base bg-transparent border-none outline-none placeholder-gray-300 font-medium text-gray-700 disabled:cursor-not-allowed"
                                 autoFocus
                             />
                             <HiOutlineMagnifyingGlass className="text-gray-300 flex-shrink-0" size={20} />
                         </div>
-
-                        {/* Search results dropdown */}
                         <BusquedaProducto
                             resultados={resultados}
                             visible={mostrarResultados}
@@ -357,7 +339,6 @@ function PuntoVenta() {
                         />
                     </div>
 
-                    {/* Mobile cart indicator */}
                     <div className="sm:hidden bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <FiShoppingCart className="text-indigo-500" size={18} />
@@ -368,10 +349,7 @@ function PuntoVenta() {
                         <span className="font-bold text-indigo-600">${totalAmount.toFixed(2)}</span>
                     </div>
                 </div>
-
-                {/* Main content: Cart + Payment */}
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
-                    {/* Cart (left, takes up more space) */}
                     <div className="lg:col-span-8 h-full min-h-0">
                         <CarritoVenta
                             items={carrito}
@@ -379,8 +357,6 @@ function PuntoVenta() {
                             onRemoveItem={eliminarDelCarrito}
                         />
                     </div>
-
-                    {/* Payment panel (right) */}
                     <div className="lg:col-span-4 h-full min-h-0">
                         <PanelPago
                             items={carrito}
@@ -391,11 +367,8 @@ function PuntoVenta() {
                     </div>
                 </div>
             </div>
-
-            {/* Modal de Apertura de Caja */}
-            {mostrarModalCaja && idSucursal && (
+            {mostrarModalCaja && (
                 <AperturaCajaModal
-                    idSucursal={Number(idSucursal)}
                     onClose={() => setMostrarModalCaja(false)}
                     onAperturaExitosa={(turno) => {
                         setTurnoActivo(turno);
@@ -427,7 +400,7 @@ function PuntoVenta() {
                 />
             )}
 
-            {/* Si no tiene turno ni sucursal */}
+            {/* Si no tiene turno ni sucursal
             {mostrarModalCaja && !idSucursal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center animate-in zoom-in-95 duration-200">
@@ -444,7 +417,7 @@ function PuntoVenta() {
                         </button>
                     </div>
                 </div>
-            )}
+            )} */}
         </MainLayout>
     );
 }

@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { login } from "./LoginService";
 import { getPantallasUsuario, savePantallasToLocalStorage } from "../../services/Pantallas";
 import { useAlerts } from "../../hooks/useAlerts";
-import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaCog, FaDatabase } from 'react-icons/fa';
+import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaCog, FaDatabase, FaBuilding, FaChevronDown } from 'react-icons/fa';
 import PaymentModal from "../../components/PaymentModal";
 import { DatabaseConfigModal } from "./components/DatabaseConfigModal";
 import { apiFetch } from "../../services/Api";
+import { Sucursales } from "../../services/Lovs";
 
 function Login() {
   const navigate = useNavigate();
@@ -14,21 +15,30 @@ function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sucursal, setSucursal] = useState("");
+  const [sucursales, setSucursales] = useState<any[]>([]);
   const { error: showError } = useAlerts();
-
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentMessage, setPaymentMessage] = useState("");
-
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [systemInfo, setSystemInfo] = useState<any>(null);
 
-  // Initial load
   useEffect(() => {
     apiFetch<any>('/system/info')
       .then(setSystemInfo)
       .catch(err => console.error("Error al cargar info de sistema:", err));
+
+    Sucursales()
+      .then(data => {
+        setSucursales(data || []);
+        if (data && data.length > 0) {
+          const firstId = data[0].id_sucursal || data[0].idSucursal;
+          setSucursal(firstId.toString());
+        }
+      })
+      .catch(err => console.error("Error al cargar sucursales:", err));
   }, []);
 
   const waitForBackend = async () => {
@@ -42,7 +52,6 @@ function Login() {
           return;
         }
       } catch (e) {
-        // Keep polling
       }
       setTimeout(poll, 2000);
     };
@@ -50,7 +59,6 @@ function Login() {
   };
 
   const handleConfigSaveSuccess = () => {
-    // Limpiar rastro de sesión previa para evitar conflictos con la nueva DB
     localStorage.removeItem("token");
     localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("user_data");
@@ -67,30 +75,33 @@ function Login() {
     setIsSubmitting(true);
 
     try {
-      const data = await login({ cuenta, password });
+      const data = await login({ sucursal, cuenta, password });
 
       if (data.success) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("user_data", JSON.stringify(data));
+        localStorage.setItem("id_sucursal", sucursal);
+
+        console.log("Sucursal", sucursal);
 
         try {
-          const pantallas = await getPantallasUsuario();
+          const pantallas = await getPantallasUsuario(sucursal);
           savePantallasToLocalStorage(pantallas);
         } catch (pantallasError) {
           console.error("⚠️ Error al cargar pantallas:", pantallasError);
         }
 
-        if (data.empresa && data.empresa.length > 0) {
-          localStorage.removeItem("requiresEmpresaConfig");
-          const emp = data.empresa[0] as any;
-          const idEmp = emp.idEmpresa || emp.id_empresa;
-          localStorage.setItem("id_empresa", idEmp?.toString() || "");
-        } else if (data.cuenta === "sistemas") {
-          localStorage.setItem("requiresEmpresaConfig", "false");
-        } else {
-          localStorage.setItem("requiresEmpresaConfig", "true");
-        }
+        // if (data.empresa && data.empresa.length > 0) {
+        //   localStorage.removeItem("requiresEmpresaConfig");
+        //   const emp = data.empresa[0] as any;
+        //   const idEmp = emp.idEmpresa || emp.id_empresa;
+        //   localStorage.setItem("id_empresa", idEmp?.toString() || "");
+        // } else if (data.cuenta === "sistemas") {
+        //   localStorage.setItem("requiresEmpresaConfig", "false");
+        // } else {
+        //   localStorage.setItem("requiresEmpresaConfig", "true");
+        // }
         window.location.href = "/home";
       }
     } catch (err: any) {
@@ -136,8 +147,6 @@ function Login() {
           </p>
         </div>
       )}
-
-      {/* floating config button */}
       <div className="fixed top-4 right-4 sm:top-8 sm:right-8 z-50">
         <button
           onClick={() => setIsConfigModalOpen(true)}
@@ -149,7 +158,6 @@ function Login() {
       </div>
 
       <div className="w-full max-w-[410px] z-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-        {/* Logo & Branding */}
         <div className="flex flex-col items-center mb-6 space-y-4">
           <div className="relative group">
             <button
@@ -183,10 +191,7 @@ function Login() {
             )}
           </div>
         </div>
-
-        {/* Login Card */}
         <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.1)] border border-white p-8 sm:p-10 relative overflow-hidden transition-all duration-500">
-          {/* Accent Line */}
           <div className="absolute top-0 left-0 w-full h-[6px] bg-gradient-to-r from-indigo-600 to-indigo-400"></div>
 
           <div className="mb-7 relative">
@@ -196,6 +201,33 @@ function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
+
+              <div className="space-y-1.5 group">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 transition-colors group-focus-within:text-indigo-600" htmlFor="idSucursal">Sucursal</label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                    <FaBuilding size={14} />
+                  </div>
+                  <select
+                    id="idSucursal"
+                    value={sucursal}
+                    onChange={(e) => setSucursal(e.target.value)}
+                    className="w-full pl-11 pr-10 py-3.5 bg-slate-50/50 border-2 border-slate-100/50 rounded-2xl focus:bg-white focus:border-indigo-600 focus:ring-8 focus:ring-indigo-600/[0.03] outline-none transition-all duration-300 font-bold text-slate-700 appearance-none cursor-pointer"
+                    required
+                  >
+                    <option value="">Seleccione Sucursal</option>
+                    {sucursales.map(suc => (
+                      <option key={suc.id_sucursal || suc.idSucursal} value={suc.id_sucursal || suc.idSucursal}>
+                        {suc.nombre}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300">
+                    <FaChevronDown size={10} />
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-1.5 group">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 transition-colors group-focus-within:text-indigo-600" htmlFor="cuenta">Cuenta de Usuario</label>
                 <div className="relative">
@@ -268,8 +300,6 @@ function Login() {
             </button>
           </form>
         </div>
-
-        {/* Footer info */}
         <p className="text-center mt-7 text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] opacity-50 select-none">
           Baluarte ERP Professional Edition © 2024
         </p>

@@ -15,15 +15,9 @@ export const buscarPorCodigoBarras = async (
     ) || [];
 };
 
-/**
- * Buscar producto por nombre en una sucursal
- */
-export const buscarPorNombre = async (
-    idSucursal: number,
-    nombre: string
-): Promise<IProductoBusqueda[]> => {
+export const buscarPorNombre = async (nombre: string): Promise<IProductoBusqueda[]> => {
     return await apiFetch<IProductoBusqueda[]>(
-        `${ENDPOINT}/buscar-producto?idSucursal=${idSucursal}&nombre=${encodeURIComponent(nombre)}`
+        `${ENDPOINT}/buscar-producto?nombre=${encodeURIComponent(nombre)}`
     ) || [];
 };
 

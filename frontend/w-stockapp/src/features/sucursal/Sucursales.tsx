@@ -6,7 +6,7 @@ import { IoMdList } from "react-icons/io";
 import { FaHome } from "react-icons/fa";
 import { MdDescription, MdStore, MdBlock } from "react-icons/md";
 import Breadcrumb from "../../components/Breadcrumb";
-import { consultarSucursalesPorSolicitante, crearSucursal, actualizarSucursal, eliminarSucursal } from "../../services/SucursalService";
+import { consultarSucursalesPorSolicitante, crearSucursal, actualizarSucursal, eliminarSucursal } from "../Sucursal/SucursalService";
 import { Sucursal } from "../../interfaces/sucursal.interface";
 import { Column } from "../../components/DataTable";
 import { StatusBadge } from "../../components/StatusBadge";
