@@ -1,7 +1,7 @@
 import React from 'react';
 import { IoIosSave } from "react-icons/io";
 import { MdEdit, MdAdd, MdPowerSettingsNew, MdOutlineDateRange, MdPersonOutline, MdOutlineEmail } from "react-icons/md";
-import type { IPersona } from '../persona.interface';
+import type { Persona } from '../persona.interface';
 import { SharedInput } from '../../../components/SharedInput';
 import { SharedButton } from '../../../components/SharedButton';
 import { StatusBadge } from '../../../components/StatusBadge';
@@ -14,8 +14,8 @@ interface PersonaFormProps {
     setIsEditing: (val: boolean) => void;
     onSave: (e: React.FormEvent) => void;
     onNew: () => void;
-    selection: IPersona | null;
-    onToggleStatus: (item: IPersona) => void;
+    selection: Persona | null;
+    onToggleStatus: (item: Persona) => void;
 }
 
 export const PersonaForm: React.FC<PersonaFormProps> = ({
@@ -31,7 +31,6 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({
     return (
         <div className="w-full h-full flex flex-col bg-slate-50/50">
             <form onSubmit={onSave} className="w-full h-full flex flex-col">
-                {/* Header Superior */}
                 <div className="flex items-center justify-between px-8 py-5 bg-white border-b border-gray-100 shrink-0 sticky top-0 z-10 shadow-sm transition-all">
                     <div>
                         <h3 className="text-xl font-bold tracking-tight text-slate-800">
@@ -104,14 +103,10 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({
                         )}
                     </div>
                 </div>
-
-                {/* Formulario Principal Dividido en Sidebars o Grillas Elegantes */}
-                <div className="flex-1 p-6 md:p-10 overflow-y-auto w-full max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-
-                    {/* Ficha Resumen */}
+                
+                <div className="flex-1 p-6 md:p-10 overflow-y-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {!isEditing && selection && (
                         <div className="bg-white p-8 rounded-3xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 overflow-hidden relative group">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full blur-3xl -mx-20 -my-20 opacity-50 pointer-events-none group-hover:opacity-70 transition-opacity"></div>
                             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                                 <div className="flex items-center gap-6">
                                     <div className="h-20 w-20 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center text-3xl font-black shadow-lg shadow-blue-500/30 transform group-hover:scale-105 transition-transform">
@@ -138,7 +133,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-8 gap-8">
                         {/* Panel de Datos Personales */}
                         <div className="lg:col-span-8 bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-l-3xl"></div>
@@ -163,19 +158,6 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({
                                 />
 
                                 <SharedInput
-                                    label="Correo Electrónico"
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    value={values.email}
-                                    onChange={handleChange}
-                                    isEditing={isEditing}
-                                    spellCheck={false}
-                                    autoComplete="email"
-                                    placeholder="correo@empresa.com"
-                                />
-
-                                <SharedInput
                                     label="Apellido Paterno"
                                     id="apellido_paterno"
                                     name="apellido_paterno"
@@ -196,27 +178,19 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({
                                     autoComplete="off"
                                     placeholder="Ej. García"
                                 />
-                            </div>
-                        </div>
 
-                        {/* Panel Lateral: Detalles de Sistema */}
-                        <div className="lg:col-span-4 space-y-6">
-                            <div className="bg-white p-7 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
-                                <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">Estado del Sistema</h4>
-
-                                <div className="space-y-5 cursor-default">
-                                    <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
-                                        <span className="text-sm font-semibold text-slate-600">Estatus Operativo</span>
-                                        <StatusBadge status={values.status ?? true} trueText="Activo" falseText="Inactivo" />
-                                    </div>
-
-                                    <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
-                                        <span className="text-sm font-semibold text-slate-600">Ingreso</span>
-                                        <span className="text-sm font-bold text-slate-800">
-                                            {values.fecha_alta ? new Date(values.fecha_alta).toLocaleDateString() : 'Pendiente'}
-                                        </span>
-                                    </div>
-                                </div>
+                                <SharedInput
+                                    label="Correo Electrónico"
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    value={values.email}
+                                    onChange={handleChange}
+                                    isEditing={isEditing}
+                                    spellCheck={false}
+                                    autoComplete="email"
+                                    placeholder="correo@empresa.com"
+                                />
                             </div>
                         </div>
                     </div>

@@ -6,7 +6,7 @@ import { IoMdList } from "react-icons/io";
 import { FaHome } from "react-icons/fa";
 import { MdDescription, MdBusiness, MdBlock } from "react-icons/md";
 import Breadcrumb from "../../components/Breadcrumb";
-import { consultarProveedores, crearProveedor, actualizarProveedor, eliminarProveedor } from "../../services/Proveedores";
+import { consultarProveedores, crearProveedor, actualizarProveedor, eliminarProveedor } from "./ProveedoresService";
 import type { IProveedor } from "./proveedor.interface";
 import { Column } from "../../components/DataTable";
 import { StatusBadge } from "../../components/StatusBadge";

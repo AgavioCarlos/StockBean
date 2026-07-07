@@ -15,8 +15,8 @@ import {
 import { consultarPersona } from "../Persona/PersonaService";
 import Breadcrumb from "../../components/Breadcrumb";
 import EditProfileModal from "../../components/EditProfileModal";
-import { obtenerVentasPorDia } from "../Reporte_ventas/ReporteVentasService";
-import type { IVentasPorDia } from "../Reporte_ventas/reporte_ventas.interface";
+import { obtenerVentasPorDia } from "../Reportes/ReporteVentasService";
+import type { IVentasPorDia } from "../Reportes/reporte_ventas.interface";
 
 interface Persona {
     id_persona: number;

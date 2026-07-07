@@ -7,12 +7,11 @@ import { FaHome } from "react-icons/fa";
 import { MdDescription, MdPeople } from "react-icons/md";
 import Breadcrumb from "../../components/Breadcrumb";
 import { consultarUsuarios, crearUsuario, actualizarUsuario, eliminarUsuario } from "./UsuarioService";
-import type { IUsuario } from "./usuario.interface";
+import type { Usuario } from "./usuario.interface";
 import { Column } from "../../components/DataTable";
 import { StatusBadge } from "../../components/StatusBadge";
 import { UsuarioList } from "./components/UsuarioList";
 import { UsuarioForm } from "./components/UsuarioForm";
-import { UsuarioMetricsSidebar } from "./components/UsuarioMetricsSidebar";
 import { useCRUD } from "../../hooks/useCRUD";
 import { consultarRoles } from "../../services/Roles";
 
@@ -42,7 +41,7 @@ export default function Usuarios() {
         handleSubmit,
         handleDeleteOrRestore,
         confirm
-    } = useCRUD<IUsuario>({
+    } = useCRUD<Usuario>({
         fetchData: consultarUsuarios,
         createData: crearUsuario,
         updateData: actualizarUsuario,
@@ -72,19 +71,18 @@ export default function Usuarios() {
         defaultStatus: true
     });
 
-    const onRowSelect = (item: IUsuario) => {
+    const onRowSelect = (item: Usuario) => {
         handleRowClick(item, (u) => ({
             persona: u.persona,
             cuenta: u.cuenta,
             id_rol: u.id_rol,
             status: u.status,
-            password: "" // Don't populate password on edit
+            password: ""
         }));
     };
 
     const onSave = async (e: React.FormEvent) => {
         handleSubmit(e, (vals, selected) => {
-            // Si persona ya existe (tiene id_persona), enviar solo la referencia
             const personaPayload = vals.persona?.id_persona
                 ? { id_persona: vals.persona.id_persona }
                 : vals.persona;
@@ -102,7 +100,7 @@ export default function Usuarios() {
         });
     };
 
-    const columnas = useMemo<Column<IUsuario>[]>(() => [
+    const columnas = useMemo<Column<Usuario>[]>(() => [
         {
             key: "persona",
             label: "Nombre completo",
@@ -138,7 +136,7 @@ export default function Usuarios() {
         }
     ], [rolesMap]);
 
-    const onToggleStatus = useCallback((item: IUsuario) => {
+    const onToggleStatus = useCallback((item: Usuario) => {
         const isDeactivating = item.status;
         confirm(
             "¿Estás seguro?",
@@ -203,7 +201,7 @@ export default function Usuarios() {
                     ]}
                 />
 
-                <div className="flex-1 overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 relative">
+                <div className="flex-1 overflow-hiddn bg-white rounded-xl shadow-sm border border-gray-200 relative">
                     <Tabs
                         tabs={items}
                         activeTab={activeTab}

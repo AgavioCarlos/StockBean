@@ -8,13 +8,13 @@ import { HiOutlineDocumentChartBar, HiOutlineBanknotes, HiOutlineShoppingCart, H
 import { useAuth } from "../../hooks/useAuth";
 import { useAlerts } from "../../hooks/useAlerts";
 import { obtenerReporteVentas, obtenerReportePorSucursal } from "./ReporteVentasService";
-import type { IVentaReporte } from "./reporte_ventas.interface";
+import type { VentaReporte } from "./reporte_ventas.interface";
 
 export default function ReporteVentas() {
     const { user } = useAuth();
     const { error: showError } = useAlerts();
 
-    const [reporteData, setReporteData] = useState<IVentaReporte[]>([]);
+    const [reporteData, setReporteData] = useState<VentaReporte[]>([]);
     const [loading, setLoading] = useState(false);
     const [idSucursal, setIdSucursal] = useState<number | "">("");
 
@@ -23,7 +23,7 @@ export default function ReporteVentas() {
         if (!user) return;
         setLoading(true);
         try {
-            let data: IVentaReporte[];
+            let data: VentaReporte[];
             if (idSucursal) {
                 data = await obtenerReportePorSucursal(Number(idSucursal));
             } else {
@@ -66,7 +66,7 @@ export default function ReporteVentas() {
     };
 
     // ─── Columnas del DataTable ──────────────────────────────
-    const columnas = useMemo<Column<IVentaReporte>[]>(() => [
+    const columnas = useMemo<Column<VentaReporte>[]>(() => [
         {
             key: "idVenta",
             label: "# Venta",

@@ -1,4 +1,4 @@
-export interface IInventario {
+export interface inventario {
     id_inventario?: number;
     producto: {
         id_producto: number;

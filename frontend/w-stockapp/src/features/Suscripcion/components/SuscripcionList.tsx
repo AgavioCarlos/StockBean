@@ -9,15 +9,13 @@ interface SuscripcionListProps {
     loading?: boolean;
 }
 
-export const SuscripcionList: React.FC<SuscripcionListProps> = ({ data, columns, onRowClick, loading }) => {
+export const SuscripcionList: React.FC<SuscripcionListProps> = ({ data, columns, onRowClick }) => {
     return (
         <div className="p-4">
             <DataTable
                 data={data}
                 columns={columns}
                 onRowClick={onRowClick}
-                searchPlaceholder="Buscar por empresa o plan..."
-                loading={loading}
             />
         </div>
     );

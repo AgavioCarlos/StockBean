@@ -6,6 +6,7 @@ import { SharedInput } from '../../../components/SharedInput';
 import { SharedButton } from '../../../components/SharedButton';
 import { StatusBadge } from '../../../components/StatusBadge';
 import { WithPermission } from '../../../components/WithPermission';
+import { ProveedorProductosPanel } from './ProveedorProductosPanel';
 
 interface ProveedoresFormProps {
     values: any;
@@ -223,6 +224,14 @@ export const ProveedoresForm: React.FC<ProveedoresFormProps> = ({
                             </div>
                         </div>
                     </div>
+
+                    {/* Panel de Productos del Proveedor */}
+                    {selection && (
+                        <ProveedorProductosPanel
+                            idProveedor={selection.idProveedor}
+                            nombreProveedor={selection.nombre}
+                        />
+                    )}
 
                     {/* Mensaje de Asistencia (Solo visible si esEditing) */}
                     <div className="text-center pb-12 pt-4">

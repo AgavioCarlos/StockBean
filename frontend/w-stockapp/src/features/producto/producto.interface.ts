@@ -31,3 +31,14 @@ export interface Productos {
   fechaAlta?: string | Date;
   fechaUltimaModificacion?: string | Date;
 }
+
+export interface CrearProducto {
+  nombre: string;
+  descripcion: string;
+  idCategoria: number | null;
+  idUnidad: number | null;
+  idMarca: number | null;
+  imagenUrl: string;
+  codigoBarras: string;
+  status: boolean;
+}
