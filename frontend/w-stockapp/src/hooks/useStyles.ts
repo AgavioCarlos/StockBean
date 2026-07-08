@@ -1,15 +1,9 @@
 import { useEffect, useState } from "react";
 import { getDisenoEmpresa, EmpresaDiseno } from "../services/EmpresaDisenoService";
 
-/**
- * Hook para cargar y aplicar dinámicamente los estilos de la empresa.
- * Inyecta variables CSS en el :root del documento.
- */
-export const useEmpresaEstilos = () => {
-    const [diseno, setDiseno] = useState<EmpresaDiseno | null>(null);
+export const useStyles = () => {
+    const [styles, setStyles] = useState<EmpresaDiseno | null>(null);
     const [loading, setLoading] = useState(true);
-
-    // Valores por defecto (Temática de la aplicación si no hay personalizada)
     const DEFAULT_DISENO: EmpresaDiseno = {
         colorPrimario: "#3b82f6", // Blue 500
         colorSecundario: "#1e293b", // Slate 800
@@ -53,7 +47,7 @@ export const useEmpresaEstilos = () => {
         const idEmpresa = localStorage.getItem("id_empresa");
         
         if (!idEmpresa) {
-            setDiseno(DEFAULT_DISENO);
+            setStyles(DEFAULT_DISENO);
             aplicarEstilos(DEFAULT_DISENO);
             setLoading(false);
             return;
@@ -69,16 +63,16 @@ export const useEmpresaEstilos = () => {
                     data.urlLogo = `/src/assets/logos/${idEmpresa}/${data.urlLogo}`;
                 }
 
-                setDiseno(data);
+                setStyles(data);
                 aplicarEstilos(data);
             } else {
                 // Si no hay registro en la DB, usar los defaults
-                setDiseno(DEFAULT_DISENO);
+                setStyles(DEFAULT_DISENO);
                 aplicarEstilos(DEFAULT_DISENO);
             }
         } catch (error) {
             console.error("Error cargando estilos:", error);
-            setDiseno(DEFAULT_DISENO);
+            setStyles(DEFAULT_DISENO);
             aplicarEstilos(DEFAULT_DISENO);
         } finally {
             setLoading(false);
@@ -99,5 +93,5 @@ export const useEmpresaEstilos = () => {
         return () => window.removeEventListener("storage", handleStorageChange);
     }, []);
 
-    return { diseno, loading, recargarEstilos: cargarEstilos };
+    return { styles, loading, recargarEstilos: cargarEstilos };
 };
