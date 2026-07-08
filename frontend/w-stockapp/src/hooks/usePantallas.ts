@@ -22,14 +22,10 @@ export const usePantallas = () => {
     const [pantallas, setPantallas] = useState<Pantalla[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Cargar pantallas desde localStorage al montar
     useEffect(() => {
         loadPantallasFromStorage();
     }, []);
 
-    /**
-     * Carga las pantallas desde localStorage
-     */
     const loadPantallasFromStorage = () => {
         const storedPantallas = getPantallasFromLocalStorage();
         if (storedPantallas) {
@@ -38,14 +34,11 @@ export const usePantallas = () => {
         setLoading(false);
     };
 
-    /**
-     * Recarga las pantallas desde el backend
-     * Útil si los permisos cambian durante la sesión
-     */
     const reloadPantallas = async () => {
         try {
             setLoading(true);
-            const nuevasPantallas = await getPantallasUsuario();
+            const sucursal = localStorage.getItem("id_sucursal") || "";
+            const nuevasPantallas = await getPantallasUsuario(sucursal);
             savePantallasToLocalStorage(nuevasPantallas);
             setPantallas(nuevasPantallas);
             setLoading(false);

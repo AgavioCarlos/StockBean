@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import type { FormEvent } from "react";
 import { useAlerts } from "./useAlerts";
 import { useForm } from "./useForm";
 
@@ -15,7 +16,7 @@ interface UseCRUDOptions<T> {
 }
 
 export function useCRUD<T>({
-    fetchData,
+    fetchData,  
     createData,
     updateData,
     deleteData,
@@ -74,7 +75,7 @@ export function useCRUD<T>({
 
     const handleSubmit = useCallback(
         async (
-            e: React.FormEvent,
+            e: FormEvent,
             buildPayload: (values: any, selectedItem: T | null) => Partial<T>
         ) => {
             e.preventDefault();
@@ -98,9 +99,8 @@ export function useCRUD<T>({
                     setActiveTab("lista");
                 } else {
                     const created = await createData(payload);
-                    success("Éxito", "Registro creado correctamente. Ahora puedes asignar permisos.");
+                    success("Éxito", "Registro creado correctamente");
                     await refreshData();
-                    // Mantener en detalle con el nuevo registro seleccionado para asignar permisos
                     setSelectedItem(created);
                     setIsEditing(false);
                 }

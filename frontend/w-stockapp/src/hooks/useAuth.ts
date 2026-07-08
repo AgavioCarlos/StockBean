@@ -1,28 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { UserSession } from '../interfaces/UserSession.interface';
 
-/**
- * Interface representing the user data stored in the session.
- * Based on the LoginResponse from LoginService.
- */
-export interface UserSession {
-    id_usuario: number;
-    cuenta: string;
-    id_rol: number;
-    token: string;
-    nombre?: string;
-    apellido_paterno?: string;
-    apellido_materno?: string;
-    email?: string;
-    empresa?: any[]; // Typically Array of objects
-    // Added for RBAC Micro-Permissions
-    permisos_crud?: Record<number, Record<string, string[]>>; // { idEmpresa: { "pantallaKey": ["create", "read"] } }
-    [key: string]: any;
-}
-
-/**
- * Hook to manage user authentication and session data.
- * Centralizes access to localStorage and provides role-based helpers.
- */
 export const useAuth = () => {
     const [user, setUser] = useState<UserSession | null>(() => {
         const uDataStr = localStorage.getItem("usuario") || localStorage.getItem("user_data");
@@ -40,7 +18,6 @@ export const useAuth = () => {
     });
     const [loading, setLoading] = useState(!user);
 
-    // Sync state if needed (though primary load is now sync)
     useEffect(() => {
         if (!user) {
             const uDataStr = localStorage.getItem("usuario") || localStorage.getItem("user_data");
@@ -61,7 +38,6 @@ export const useAuth = () => {
         window.location.href = "/login";
     }, []);
 
-    // Role-based helper properties
     const roles = useMemo(() => ({
         isSistem: user?.id_rol === 1,
         isAdmin: user?.id_rol === 2,
@@ -82,16 +58,9 @@ export const useAuth = () => {
     };
 };
 
-/**
- * Hook to retrieve specific UI interactions (CRUD) per screen based on RBAC.
- * It reads the injected "permisos_crud" object map from the user's session.
- * Permissions are now ALWAYS read from admin_usuario_pantalla for ALL roles.
- * NOTE: JSON keys are always strings, so we must use String() for empresa ID lookups.
- */
 export const usePermissions = (pantallaKey: string) => {
     const { user, loading } = useAuth();
 
-    // Default permission object for when we are loading or unauthorized
     const DENIED = {
         canView: false,
         canCreate: false,
@@ -105,8 +74,6 @@ export const usePermissions = (pantallaKey: string) => {
     if (loading) return DENIED;
 
     const permisosCrud = user?.permisos_crud;
-
-    // Fallback: si Sistemas no tiene permisos_crud definidos, otorgar todo como seguridad
     if (!permisosCrud || Object.keys(permisosCrud).length === 0) {
         if (user?.id_rol === 1) {
             return { ...DENIED, canView: true, canCreate: true, canRead: true, canUpdate: true, canDelete: true, canExport: true, loading: false };
@@ -114,22 +81,17 @@ export const usePermissions = (pantallaKey: string) => {
         return DENIED;
     }
 
-    // JSON keys are ALWAYS strings ("5" not 5), so use String for the lookup
     const empresaKeys = Object.keys(permisosCrud);
     const activeEmpresaKey = localStorage.getItem('id_empresa') || empresaKeys[0] || '';
-
-    // Access the permissions map for this empresa using the string key
     const permisosPorPantalla = permisosCrud[activeEmpresaKey as any];
 
     if (!permisosPorPantalla) {
-        // Fallback para Sistemas sin empresa
         if (user?.id_rol === 1) {
             return { ...DENIED, canView: true, canCreate: true, canRead: true, canUpdate: true, canDelete: true, canExport: true, loading: false };
         }
         return DENIED;
     }
 
-    // Get the actions array for this specific screen
     const accionesPermitidas = (permisosPorPantalla[pantallaKey] || []).map((p: string) => p.toLowerCase());
 
     const canView = accionesPermitidas.includes('ver');
