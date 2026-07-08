@@ -16,7 +16,8 @@ import com.stockbean.stockapp.repository.PantallaRepository;
 @Service
 public class PantallaService {
 
-    private static final Logger log = LoggerFactory.getLogger(PantallaService.class);
+    // private static final Logger log =
+    // LoggerFactory.getLogger(PantallaService.class);
 
     @Autowired
     private PantallaRepository pantallaRepository;
@@ -52,6 +53,7 @@ public class PantallaService {
                 })
                 .collect(Collectors.toList());
     }
+
     public List<Pantallas> findPantallasByRol(Integer idRol) {
         if (idRol != null && idRol == 1) {
             List<Pantallas> result = pantallaRepository.findAllRoot();
@@ -60,6 +62,7 @@ public class PantallaService {
         List<Pantallas> result = pantallaRepository.findAllNoRoot();
         return result;
     }
+
     public List<Pantallas> findAllActivas() {
         return pantallaRepository.findAllActivas();
     }
