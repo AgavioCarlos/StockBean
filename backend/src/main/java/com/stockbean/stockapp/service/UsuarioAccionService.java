@@ -104,7 +104,6 @@ public class UsuarioAccionService {
 
                                 Empresa empresa = new Empresa();
                                 empresa.setIdEmpresa(idSucursal);
-                                // existente.setEmpresa(empresa);
 
                                 Pantallas pantalla = new Pantallas();
                                 pantalla.setIdPantalla(req.getIdPantalla());
