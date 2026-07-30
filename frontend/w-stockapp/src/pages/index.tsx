@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Planes from '../components/Planes';
 import Footer from "../components/Layouts/Footer";
-import { FaRocket, FaShieldAlt, FaChartLine, FaCheckCircle } from 'react-icons/fa';
+import { FaRocket, FaShieldAlt, FaChartLine } from 'react-icons/fa';
 import { BsArrowRight } from 'react-icons/bs';
 
 function Inicio() {
@@ -116,7 +116,7 @@ function Inicio() {
           <div className="max-w-7xl mx-auto px-6 text-center">
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.3em] mb-12">Empresas que confían en nosotros</h3>
             <div className="flex flex-wrap justify-center gap-12 lg:gap-24 opacity-40 grayscale filter transition-all hover:grayscale-0 hover:opacity-100">
-              <span className="text-2xl font-black text-gray-400">STOCKWARE</span>
+              <span className="text-2xl font-black text-gray-400">STOCKAPP</span>
               <span className="text-2xl font-black text-gray-400">INVENSYS</span>
               <span className="text-2xl font-black text-gray-400">DATAFLOW</span>
               <span className="text-2xl font-black text-gray-400">CORELOGIC</span>
