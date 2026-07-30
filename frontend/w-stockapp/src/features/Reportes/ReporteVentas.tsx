@@ -9,14 +9,20 @@ import { useAuth } from "../../hooks/useAuth";
 import { useAlerts } from "../../hooks/useAlerts";
 import { obtenerReporteVentas, obtenerReportePorSucursal } from "./ReporteVentasService";
 import type { VentaReporte } from "./reporte_ventas.interface";
+import { ExportPdfButton, ExportExcelButton } from "../../components/ExportButtons";
 
 export default function ReporteVentas() {
     const { user } = useAuth();
     const { error: showError } = useAlerts();
 
     const [reporteData, setReporteData] = useState<VentaReporte[]>([]);
+    const [filteredData, setFilteredData] = useState<VentaReporte[]>([]);
     const [loading, setLoading] = useState(false);
     const [idSucursal, setIdSucursal] = useState<number | "">("");
+
+    useEffect(() => {
+        setFilteredData(reporteData);
+    }, [reporteData]);
 
     // ─── Cargar datos ────────────────────────────────────────
     const cargarReporte = useCallback(async () => {
@@ -64,6 +70,41 @@ export default function ReporteVentas() {
             minute: "2-digit",
         });
     };
+
+    const columnasExportar = useMemo(() => [
+        {
+            label: "# Venta",
+            getValue: (item: VentaReporte) => `#${item.idVenta}`
+        },
+        {
+            label: "Fecha",
+            getValue: (item: VentaReporte) => formatFecha(item.fechaVenta)
+        },
+        {
+            label: "Sucursal",
+            getValue: (item: VentaReporte) => item.sucursal || "N/A"
+        },
+        {
+            label: "Cajero",
+            getValue: (item: VentaReporte) => item.cajero || "N/A"
+        },
+        {
+            label: "Items",
+            getValue: (item: VentaReporte) => item.cantidadItems
+        },
+        {
+            label: "Productos",
+            getValue: (item: VentaReporte) => item.totalProductos
+        },
+        {
+            label: "Método Pago",
+            getValue: (item: VentaReporte) => item.metodoPago || "N/A"
+        },
+        {
+            label: "Total",
+            getValue: (item: VentaReporte) => `$${(item.totalVenta || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        }
+    ], []);
 
     // ─── Columnas del DataTable ──────────────────────────────
     const columnas = useMemo<Column<VentaReporte>[]>(() => [
@@ -251,6 +292,23 @@ export default function ReporteVentas() {
                         <DataTable
                             data={reporteData}
                             columns={columnas}
+                            onFilteredDataChange={setFilteredData}
+                            actionContent={
+                                <div className="flex items-center gap-2">
+                                    <ExportPdfButton
+                                        data={filteredData}
+                                        columns={columnasExportar}
+                                        fileName={`Reporte_Ventas_${idSucursal ? (reporteData[0]?.sucursal || 'Sucursal').replace(/\s+/g, '_') : 'General'}`}
+                                        reportTitle="Baluarte - Reporte de Ventas"
+                                        reportSubtitle={idSucursal ? `Sucursal: ${reporteData[0]?.sucursal || 'N/A'}` : "Todas las sucursales"}
+                                    />
+                                    <ExportExcelButton
+                                        data={filteredData}
+                                        columns={columnasExportar}
+                                        fileName={`Reporte_Ventas_${idSucursal ? (reporteData[0]?.sucursal || 'Sucursal').replace(/\s+/g, '_') : 'General'}`}
+                                    />
+                                </div>
+                            }
                         />
                     </div>
                 </div>

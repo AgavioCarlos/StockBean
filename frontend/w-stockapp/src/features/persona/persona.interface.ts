@@ -6,4 +6,5 @@ export interface Persona {
     email: string;
     status: boolean;
     fecha_alta?: string;
+    password?: string;
 }

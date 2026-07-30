@@ -10,13 +10,17 @@ import {
     FaTimesCircle,
     FaEnvelope,
     FaUserTag,
-    FaChartBar
+    FaChartBar,
+    FaLock,
+    FaEye,
+    FaEyeSlash,
+    FaSave
 } from "react-icons/fa";
-import { consultarPersona } from "../Persona/PersonaService";
+import { consultarPersona, actualizarPersona } from "../Persona/PersonaService";
 import Breadcrumb from "../../components/Breadcrumb";
-import EditProfileModal from "../../components/EditProfileModal";
 import { obtenerVentasPorDia } from "../Reportes/ReporteVentasService";
 import type { IVentasPorDia } from "../Reportes/reporte_ventas.interface";
+import Swal from "sweetalert2";
 
 interface Persona {
     id_persona: number;
@@ -29,6 +33,7 @@ interface Persona {
     id_rol?: number;
     cuenta?: string;
     fecha_alta?: string;
+    password?: string;
 }
 
 function Perfil() {
@@ -36,7 +41,19 @@ function Perfil() {
     const [ventasDia, setVentasDia] = useState<IVentasPorDia[]>([]);
     const [loadingPersona, setLoadingPersona] = useState(true);
     const [loadingVentas, setLoadingVentas] = useState(true);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    
+    // States for inline editing
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [formData, setFormData] = useState({
+        nombre: '',
+        apellido_paterno: '',
+        apellido_materno: '',
+        email: '',
+        password: ''
+    });
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const cargarDatos = async () => {
         try {
@@ -86,10 +103,90 @@ function Perfil() {
         cargarDatos();
     }, []);
 
-    const handleProfileUpdate = (updatedPersona: any) => {
-        setPersona(prev => prev ? { ...prev, ...updatedPersona } : updatedPersona);
-        // Also refresh from storage since modal updates it
-        cargarDatos();
+    const startEditing = () => {
+        if (persona) {
+            setFormData({
+                nombre: persona.nombre || '',
+                apellido_paterno: persona.apellido_paterno || '',
+                apellido_materno: persona.apellido_materno || '',
+                email: persona.email || '',
+                password: ''
+            });
+            setErrors({});
+            setShowPassword(false);
+            setIsEditing(true);
+        }
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: '' }));
+        }
+    };
+
+    const validateForm = (): boolean => {
+        const newErrors: Record<string, string> = {};
+        if (!formData.nombre.trim()) newErrors.nombre = 'El nombre es requerido';
+        if (!formData.apellido_paterno.trim()) newErrors.apellido_paterno = 'El apellido paterno es requerido';
+        if (!formData.email.trim()) {
+            newErrors.email = 'El email es requerido';
+        } else {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!re.test(formData.email)) {
+                newErrors.email = 'Email inválido';
+            }
+        }
+        if (formData.password && formData.password.length < 6) {
+            newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSave = async () => {
+        if (!validateForm() || !persona) return;
+        setIsSaving(true);
+        try {
+            const updatedData = {
+                ...persona,
+                ...formData
+            };
+            const response = await actualizarPersona(persona.id_persona, updatedData);
+            if (response) {
+                // Update local storage
+                const storedData = localStorage.getItem("user_data");
+                if (storedData) {
+                    const userData = JSON.parse(storedData);
+                    const localDataToSave = { ...formData };
+                    delete localDataToSave.password; // Do not store plain password
+                    const newUserContext = { ...userData, ...localDataToSave };
+                    localStorage.setItem("user_data", JSON.stringify(newUserContext));
+                }
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Perfil Actualizado!',
+                    text: 'Tus cambios se han guardado correctamente.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                setPersona(prev => prev ? { ...prev, ...formData } : null);
+                setIsEditing(false);
+            }
+        } catch (error: any) {
+            console.error('Error al actualizar perfil:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'No se pudo actualizar el perfil.',
+                confirmButtonText: 'Cerrar'
+            });
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const getRoleName = (id?: number) => {
@@ -173,13 +270,42 @@ function Perfil() {
                                     </div>
                                 </div>
 
-                                <button
-                                    onClick={() => setIsEditModalOpen(true)}
-                                    className="mt-8 w-full py-3.5 bg-gray-900 text-white rounded-2xl font-bold text-sm shadow-lg shadow-gray-200 flex items-center justify-center gap-2 hover:bg-blue-600 hover:shadow-blue-200 transition-all duration-300 transform active:scale-[0.98] group"
-                                >
-                                    <FaEdit className="transition-transform group-hover:rotate-12" />
-                                    Editar Información
-                                </button>
+                                {!isEditing ? (
+                                    <button
+                                        onClick={startEditing}
+                                        className="mt-8 w-full py-3.5 bg-gray-900 text-white rounded-2xl font-bold text-sm shadow-lg shadow-gray-200 flex items-center justify-center gap-2 hover:bg-blue-600 hover:shadow-blue-200 transition-all duration-300 transform active:scale-[0.98] group"
+                                    >
+                                        <FaEdit className="transition-transform group-hover:rotate-12" />
+                                        Editar Información
+                                    </button>
+                                ) : (
+                                    <div className="mt-8 space-y-3 w-full animate-in fade-in duration-300">
+                                        <button
+                                            onClick={handleSave}
+                                            disabled={isSaving}
+                                            className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-blue-200 flex items-center justify-center gap-2 hover:scale-[1.02] hover:shadow-blue-300 transition-all duration-300 active:scale-[0.98] disabled:bg-gray-400 disabled:shadow-none"
+                                        >
+                                            {isSaving ? (
+                                                <>
+                                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                    <span>Guardando...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <FaSave />
+                                                    <span>Guardar Cambios</span>
+                                                </>
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={() => setIsEditing(false)}
+                                            disabled={isSaving}
+                                            className="w-full py-3.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -230,16 +356,93 @@ function Perfil() {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                                    <InfoField
-                                        label="Nombre Completo"
-                                        value={`${persona?.nombre} ${persona?.apellido_paterno} ${persona?.apellido_materno || ""}`}
-                                        icon={<FaUserTag />}
-                                    />
-                                    <InfoField
-                                        label="Correo Electrónico"
-                                        value={persona?.email || ""}
-                                        icon={<FaEnvelope />}
-                                    />
+                                    {isEditing ? (
+                                        <>
+                                            <div className="space-y-2 animate-in fade-in duration-300">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Nombre</p>
+                                                <input
+                                                    type="text"
+                                                    name="nombre"
+                                                    value={formData.nombre}
+                                                    onChange={handleInputChange}
+                                                    className={`w-full px-4 py-3 bg-gray-50 border-2 rounded-2xl focus:bg-white focus:ring-4 transition-all duration-300 ${errors.nombre ? 'border-red-500 focus:ring-red-100' : 'border-gray-100 focus:border-blue-500 focus:ring-blue-500/10'}`}
+                                                />
+                                                {errors.nombre && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.nombre}</p>}
+                                            </div>
+                                            <div className="space-y-2 animate-in fade-in duration-300">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Apellido Paterno</p>
+                                                <input
+                                                    type="text"
+                                                    name="apellido_paterno"
+                                                    value={formData.apellido_paterno}
+                                                    onChange={handleInputChange}
+                                                    className={`w-full px-4 py-3 bg-gray-50 border-2 rounded-2xl focus:bg-white focus:ring-4 transition-all duration-300 ${errors.apellido_paterno ? 'border-red-500 focus:ring-red-100' : 'border-gray-100 focus:border-blue-500 focus:ring-blue-500/10'}`}
+                                                />
+                                                {errors.apellido_paterno && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.apellido_paterno}</p>}
+                                            </div>
+                                            <div className="space-y-2 animate-in fade-in duration-300">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Apellido Materno</p>
+                                                <input
+                                                    type="text"
+                                                    name="apellido_materno"
+                                                    value={formData.apellido_materno}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Opcional"
+                                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300"
+                                                />
+                                            </div>
+                                            <div className="space-y-2 animate-in fade-in duration-300">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Correo Electrónico</p>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={handleInputChange}
+                                                    className={`w-full px-4 py-3 bg-gray-50 border-2 rounded-2xl focus:bg-white focus:ring-4 transition-all duration-300 ${errors.email ? 'border-red-500 focus:ring-red-100' : 'border-gray-100 focus:border-blue-500 focus:ring-blue-500/10'}`}
+                                                />
+                                                {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.email}</p>}
+                                            </div>
+                                            <div className="space-y-2 animate-in fade-in duration-300">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Nueva Contraseña (dejar en blanco para no cambiar)</p>
+                                                <div className="relative group">
+                                                    <input
+                                                        type={showPassword ? 'text' : 'password'}
+                                                        name="password"
+                                                        value={formData.password}
+                                                        onChange={handleInputChange}
+                                                        placeholder="Min. 6 caracteres"
+                                                        className={`w-full pl-4 pr-12 py-3 bg-gray-50 border-2 rounded-2xl focus:bg-white focus:ring-4 transition-all duration-300 ${errors.password ? 'border-red-500 focus:ring-red-100' : 'border-gray-100 focus:border-blue-500 focus:ring-blue-500/10'}`}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowPassword(prev => !prev)}
+                                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors"
+                                                    >
+                                                        {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                                                    </button>
+                                                </div>
+                                                {errors.password && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.password}</p>}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <InfoField
+                                                label="Nombre Completo"
+                                                value={`${persona?.nombre} ${persona?.apellido_paterno} ${persona?.apellido_materno || ""}`}
+                                                icon={<FaUserTag />}
+                                            />
+                                            <InfoField
+                                                label="Correo Electrónico"
+                                                value={persona?.email || ""}
+                                                icon={<FaEnvelope />}
+                                            />
+                                            <InfoField
+                                                label="Contraseña"
+                                                value="••••••••"
+                                                icon={<FaLock />}
+                                            />
+                                        </>
+                                    )}
                                     <InfoField
                                         label="Cuenta de Usuario"
                                         value={persona?.cuenta || "N/A"}
@@ -333,12 +536,6 @@ function Perfil() {
                 </div>
             </div>
 
-            <EditProfileModal
-                isOpen={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
-                persona={persona}
-                onUpdate={handleProfileUpdate}
-            />
         </MainLayout>
     );
 }

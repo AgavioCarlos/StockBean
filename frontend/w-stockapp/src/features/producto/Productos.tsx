@@ -7,12 +7,14 @@ import { useCRUD } from "../../hooks/useCRUD";
 import { useLOVs } from "../../hooks/useLOVs";
 import Tabs from "../../components/Tabs";
 import { DataTable, type Column } from "../../components/DataTable";
-import { SharedButton, PdfButton, ExcelButton } from "../../components/SharedButton";
+import { SharedButton } from "../../components/SharedButton";
+import { ExportPdfButton, ExportExcelButton } from "../../components/ExportButtons";
 import { StatusBadge } from "../../components/StatusBadge";
 import StatusFilter from "../../components/StatusFilter";
 import { RefreshButton } from "../../components/RefreshButton";
 import { PageContainer, SectionHeader, LoadingOverlay, EmptyState } from "../../components/ui";
 import { ProductosForm } from "./components/ProductosForm";
+import { getCategoryIcon } from "../../utils/categoryIcons";
 
 function ProductosPage() {
     const [filtroEstado, setFiltroEstado] = useState(true);
@@ -92,8 +94,72 @@ function ProductosPage() {
         [dataList, filtroEstado]
     );
 
+    const columnasExportar = useMemo(() => [
+        {
+            label: "Nombre",
+            getValue: (item: Productos) => item.nombre
+        },
+        {
+            label: "Descripción",
+            getValue: (item: Productos) => item.descripcion || ""
+        },
+        {
+            label: "Categoría",
+            getValue: (item: Productos) => {
+                const idCat = item.categoria?.idCategoria ?? item.idCategoria;
+                const cat = lovOptions.categorias.find((c: any) => c.value === idCat);
+                return cat?.label || item.categoria?.nombre || "Sin Categoría";
+            }
+        },
+        {
+            label: "Marca",
+            getValue: (item: Productos) => {
+                const idMarca = item.marca?.idMarca ?? item.idMarca;
+                const m = lovOptions.marcas.find((mar: any) => mar.value === idMarca);
+                return m?.label || item.marca?.nombre || "—";
+            }
+        },
+        {
+            label: "Unidad",
+            getValue: (item: Productos) => {
+                const idUnidad = item.unidad?.idUnidad ?? item.idUnidad;
+                const u = lovOptions.unidades.find((uni: any) => uni.value === idUnidad);
+                return u?.label || item.unidad?.nombre || "—";
+            }
+        },
+        {
+            label: "Código de Barras",
+            getValue: (item: Productos) => item.codigoBarras || "N/A"
+        },
+        {
+            label: "Estado",
+            getValue: (item: Productos) => item.status ? "Activo" : "Inactivo"
+        }
+    ], [lovOptions]);
+
     const columnDefs = useMemo<Column<Productos>[]>(() => [
-        { key: "nombre", label: "Nombre", sortable: true },
+        { 
+            key: "nombre", 
+            label: "Nombre", 
+            sortable: true,
+            render: (nombre, item) => {
+                const idCat = item.categoria?.idCategoria ?? item.idCategoria;
+                const cat = lovOptions.categorias.find((c: any) => c.value === idCat);
+                const categoryName = cat?.label || item.categoria?.nombre || "";
+                return (
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/50">
+                            {item.imagenUrl ? (
+                                <img src={item.imagenUrl} alt={nombre} className="w-full h-full object-cover" />
+                            ) : (
+                                getCategoryIcon(categoryName, 18, "text-slate-400")
+                            )}
+                        </div>
+                        <span className="font-semibold text-slate-800">{nombre}</span>
+                    </div>
+                );
+            }
+        },
         { key: "descripcion", label: "Descripción" },
         {
             key: "categoria",
@@ -138,25 +204,27 @@ function ProductosPage() {
                             icon: <IoMdList />,
                             content: (
                                 <div className="p-6 pt-2 flex flex-col h-full relative">
-                                    <SectionHeader
-                                        title="Inventario"
-                                        subtitle={`${rowDataFiltrada.length} productos registrados.`}
-                                        className="border-none mb-4"
-                                        actions={
-                                            <div className="flex items-center gap-2">
-                                                <StatusFilter status={filtroEstado} onChange={setFiltroEstado} />
-                                                <div className="h-6 w-px bg-slate-200 mx-1"></div>
-                                                <RefreshButton onRefresh={refreshData} showText={false} />
-                                                <PdfButton onClick={() => { }} />
-                                                <ExcelButton onClick={() => { }} />
-                                                <SharedButton onClick={crud.newFromDetail} variant="primary" icon={<IoMdAddCircle size={20} />}>
-                                                    Agregar
-                                                </SharedButton>
-                                            </div>
-                                        }
-                                    />
+                                    <div className="flex items-center justify-end mb-4 gap-2 flex-wrap sm:flex-nowrap">
+                                        <StatusFilter status={filtroEstado} onChange={setFiltroEstado} />
+                                        <div className="h-6 w-px bg-slate-200 mx-1"></div>
+                                        <RefreshButton onRefresh={refreshData} showText={false} />
+                                        <ExportPdfButton
+                                            data={rowDataFiltrada}
+                                            columns={columnasExportar}
+                                            fileName="Catálogo_Productos"
+                                            reportTitle="Baluarte - Catálogo de Productos"
+                                            reportSubtitle={`Filtro: Productos ${filtroEstado ? 'Activos' : 'Inactivos'}`}
+                                        />
+                                        <ExportExcelButton
+                                            data={rowDataFiltrada}
+                                            columns={columnasExportar}
+                                            fileName="Catálogo_Productos"
+                                        />
+                                        <div className="h-6 w-px bg-slate-200 mx-1"></div>
+                                        <SharedButton onClick={crud.newFromDetail} variant="primary" icon={<IoMdAddCircle size={20} />}></SharedButton>
+                                    </div>
 
-                                    <div className="flex-1 overflow-hidden relative">
+                                    <div className="flex-1 overflow-auto relative">
                                         {loading && <LoadingOverlay message="Cargando productos..." />}
 
                                         {!loading && rowDataFiltrada.length === 0 ? (
