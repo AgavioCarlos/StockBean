@@ -1,9 +1,10 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useMemo } from 'react';
 import { IoMdCube } from 'react-icons/io';
 import { FormGrid, FormCol } from '../../../components/ui';
 import { SharedInput } from '../../../components/SharedInput';
 import { SharedTextarea } from '../../../components/SharedTextarea';
 import { SearchableSelect } from '../../../components/SearchableSelect';
+import { getCategoryIcon } from '../../../utils/categoryIcons';
 
 interface ProductosFormProps {
     values: any;
@@ -31,6 +32,12 @@ export const ProductosForm: React.FC<ProductosFormProps> = ({
     imagenUrl,
     onImageChange,
 }) => {
+    const activeCategoryName = useMemo(() => {
+        if (!values.idCategoria || !lovOptions.categorias) return "";
+        const cat = lovOptions.categorias.find((c: any) => Number(c.value) === Number(values.idCategoria));
+        return cat ? cat.label : "";
+    }, [values.idCategoria, lovOptions.categorias]);
+
     return (
         <div>
             <div className="flex flex-col lg:flex-row gap-8 min-h-[400px]">
@@ -59,11 +66,11 @@ export const ProductosForm: React.FC<ProductosFormProps> = ({
                             />
                         ) : (
                             <div className="text-center p-6 flex flex-col items-center gap-3">
-                                <div className={`transition-colors duration-300 ${isEditing ? 'text-empresa-primario/40 group-hover:text-empresa-primario' : 'text-slate-200'}`}>
-                                    <IoMdCube size={64} />
+                                <div className={`transition-colors duration-300 ${isEditing ? 'text-empresa-primario/40 group-hover:text-empresa-primario' : 'text-slate-350'}`}>
+                                    {getCategoryIcon(activeCategoryName, 64, isEditing ? 'text-empresa-primario/40 group-hover:text-empresa-primario' : 'text-slate-350')}
                                 </div>
                                 <p className="text-sm font-bold text-slate-400">
-                                    {isEditing ? "Subir imagen" : "Sin imagen"}
+                                    {activeCategoryName ? activeCategoryName : (isEditing ? "Subir imagen" : "Sin imagen")}
                                 </p>
                             </div>
                         )}

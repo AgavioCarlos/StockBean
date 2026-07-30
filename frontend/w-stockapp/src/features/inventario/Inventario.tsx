@@ -13,19 +13,21 @@ import { Column, DataTable } from "../../components/DataTable";
 import { useAuth, } from "../../hooks/useAuth";
 import { useForm } from "../../hooks/useForm";
 import { StatusBadge, StockBadge } from "../../components/StatusBadge";
-import { ExcelButton, PdfButton, SharedButton } from "../../components/SharedButton";
+import { SharedButton } from "../../components/SharedButton";
+import { ExportPdfButton, ExportExcelButton } from "../../components/ExportButtons";
 import { SearchableSelect } from "../../components/SearchableSelect";
 import { useNavigate } from "react-router-dom";
 import { usePermissions } from "../../hooks/useAuth";
 import { WithPermission } from "../../components/WithPermission";
 import { RefreshButton } from "../../components/RefreshButton";
+import { BranchSelect } from "../../components/BranchSelect";
 
 export default function Inventario() {
     const navigate = useNavigate();
     const permisos = usePermissions("inventario");
     const { success, error: showError, warning, confirm, info } = useAlerts();
     const [inventarioList, setInventarioList] = useState<inventario[]>([]);
-    const { data: lovs, loading: loadingLovs } = useLOVs(["productos", "tipo_precios", "sucursales"]);
+    const { data: lovs } = useLOVs(["productos", "tipo_precios", "sucursales"]);
 
     const productOptions = useMemo(() => (lovs.productos || []).map((p: any) => ({
         value: p.id_producto || p.idProducto,
@@ -46,6 +48,45 @@ export default function Inventario() {
     const { user } = useAuth();
     const [idSucursalSeleccionada, setIdSucursalSeleccionada] = useState<number | "">("");
 
+    const sucursalNombre = useMemo(() => {
+        if (!idSucursalSeleccionada || !lovs.sucursales) return "";
+        const suc = lovs.sucursales.find(
+            (s: any) => Number(s.id_sucursal || s.idSucursal) === Number(idSucursalSeleccionada)
+        );
+        return suc ? suc.nombre : "";
+    }, [idSucursalSeleccionada, lovs.sucursales]);
+
+    const columnasExportar = useMemo(() => [
+        {
+            label: "Producto",
+            getValue: (item: inventario) => item.producto?.nombre || "N/A"
+        },
+        {
+            label: "Código de Barras",
+            getValue: (item: inventario) => item.producto?.codigoBarras || "N/A"
+        },
+        {
+            label: "Stock Actual",
+            getValue: (item: inventario) => item.stock_actual
+        },
+        {
+            label: "Stock Mínimo",
+            getValue: (item: inventario) => item.stock_minimo
+        },
+        {
+            label: "Estado",
+            getValue: (item: inventario) => item.stock_actual <= item.stock_minimo ? "Bajo" : "Óptimo"
+        },
+        {
+            label: "Precio Compra",
+            getValue: (item: inventario) => item.precioAnterior !== undefined && item.precioAnterior !== null ? `$${item.precioAnterior.toFixed(2)}` : "N/A"
+        },
+        {
+            label: "Precio Venta",
+            getValue: (item: inventario) => item.precioNuevo !== undefined && item.precioNuevo !== null ? `$${item.precioNuevo.toFixed(2)}` : "N/A"
+        }
+    ], []);
+
     const { values, handleChange, setValues, resetForm } = useForm({
         idProducto: 0 as number,
         stockActual: 0,
@@ -61,16 +102,9 @@ export default function Inventario() {
         setInventarioList([]);
     }, []);
 
-    useEffect(() => {
-        if (idSucursalSeleccionada === "") {
-            if (user?.id_sucursal) {
-                setIdSucursalSeleccionada(Number(user.id_sucursal));
-            }
-            else {
-                warning("Atención", "No tiene una sucursal asignada, por favor contacte al administrador");
-            }
-        }
-    }, [loadingLovs, lovs.sucursales, idSucursalSeleccionada, user]);
+    const handleBranchChange = useCallback((id: number | "") => {
+        setIdSucursalSeleccionada(id);
+    }, []);
 
     const handleRowClick = useCallback((item: inventario) => {
         setInvSelected(item);
@@ -289,7 +323,16 @@ export default function Inventario() {
                         </div>
                     </div>
                 ) : (
-                    <div className="flex-1 overflow-visible bg-white rounded-2xl shadow-sm border border-slate-200 m-4 relative overflow-hidden">
+                    <>
+                        <div className="mx-4 mt-4 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+                            <BranchSelect
+                                value={idSucursalSeleccionada}
+                                onChange={handleBranchChange}
+                                label="Sucursal"
+                                placeholder="Selecciona una sucursal para ver su inventario..."
+                            />
+                        </div>
+                        <div className="flex-1 overflow-visible bg-white rounded-2xl shadow-sm border border-slate-200 m-4 relative overflow-hidden">
                         <Tabs
                             activeTab={activeTab}
                             onChange={setActiveTab}
@@ -312,22 +355,32 @@ export default function Inventario() {
                                                     columns={columnas}
                                                     onRowClick={handleRowClick}
                                                     actionContent={
-                                                        <WithPermission screen="inventario" action="create">
-                                                            <div className="flex items-center gap-2">
-                                                                <div className="h-6 w-px bg-slate-200 mx-1"></div>
-                                                                <RefreshButton onRefresh={refreshData} showText={false} />
-                                                                <PdfButton onClick={() => { }} />
-                                                                <ExcelButton onClick={() => { }} />
-                                                            </div>
-                                                            <SharedButton
-                                                                onClick={nuevoDesdeDetalle}
-                                                                variant="primary"
-                                                                size="icon"
-                                                                title="Nuevo Inventario"
-                                                                aria-label="Nuevo Inventario"
-                                                                icon={<IoMdAddCircle size={28} aria-hidden="true" />}
+                                                        <div className="flex items-center gap-2">
+                                                            <RefreshButton onRefresh={refreshData} showText={false} />
+                                                            <ExportPdfButton
+                                                                data={inventarioList}
+                                                                columns={columnasExportar}
+                                                                fileName={`Reporte_Inventario_${sucursalNombre.replace(/\s+/g, '_') || 'General'}`}
+                                                                reportTitle="Baluarte - Reporte de Existencias en Inventario"
+                                                                reportSubtitle={`Sucursal: ${sucursalNombre || 'N/A'}`}
                                                             />
-                                                        </WithPermission>
+                                                            <ExportExcelButton
+                                                                data={inventarioList}
+                                                                columns={columnasExportar}
+                                                                fileName={`Reporte_Inventario_${sucursalNombre.replace(/\s+/g, '_') || 'General'}`}
+                                                            />
+                                                            <WithPermission screen="inventario" action="create">
+                                                                <div className="h-6 w-px bg-slate-200 mx-1"></div>
+                                                                <SharedButton
+                                                                    onClick={nuevoDesdeDetalle}
+                                                                    variant="primary"
+                                                                    size="icon"
+                                                                    title="Nuevo Inventario"
+                                                                    aria-label="Nuevo Inventario"
+                                                                    icon={<IoMdAddCircle size={28} aria-hidden="true" />}
+                                                                />
+                                                            </WithPermission>
+                                                        </div>
                                                     }
                                                 />
                                                 {inventarioList.length === 0 && !loadingInventario && (
@@ -480,7 +533,8 @@ export default function Inventario() {
                                 }
                             ]}
                         />
-                    </div>
+                        </div>
+                    </>
                 )}
             </div>
         </MainLayout>

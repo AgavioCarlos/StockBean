@@ -172,10 +172,8 @@ export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario, idR
             const acciones = [...row.acciones];
             const accionActual = acciones[idxAccion];
 
-            // Si se está desactivando "view", también desactivar create, delete, export
             if (accionActual.nombreAccion === 'view' && accionActual.permitido) {
                 acciones[idxAccion] = { ...accionActual, permitido: false };
-                // Desactivar las acciones bloqueadas
                 for (let i = 0; i < acciones.length; i++) {
                     if (ACCIONES_BLOQUEADAS_SIN_VER.includes(acciones[i].nombreAccion)) {
                         acciones[i] = { ...acciones[i], permitido: false };
@@ -192,7 +190,6 @@ export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario, idR
         setHasChanges(true);
     };
 
-    // Toggle de toda una fila
     const toggleFilaCompleta = (idxPantalla: number) => {
         setMatriz(prev => {
             const copy = [...prev];
@@ -205,7 +202,6 @@ export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario, idR
         setHasChanges(true);
     };
 
-    // Guardar
     const guardar = async () => {
         if (!idEmpresa) return;
         setSaving(true);

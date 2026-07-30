@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import MainLayout from "../../components/Layouts/MainLayout";
 import { TbBarcode } from "react-icons/tb";
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
@@ -15,6 +15,10 @@ import AperturaCajaModal from "./components/AperturaCajaModal";
 import CierreCajaModal from "./components/CierreCajaModal";
 import MovimientoCajaModal from "./components/MovimientoCajaModal";
 import { FiChevronDown, FiLogOut, FiDollarSign } from "react-icons/fi";
+import { FaBuilding } from "react-icons/fa";
+import { apiFetch } from "../../services/Api";
+import { getPantallasUsuario, savePantallasToLocalStorage } from "../../services/Pantallas";
+import { SearchableSelect } from "../../components/SearchableSelect";
 
 function PuntoVenta() {
     const { user } = useAuth();
@@ -22,6 +26,15 @@ function PuntoVenta() {
 
     // Sucursal
     const [idSucursal, setIdSucursal] = useState<number | "">("");
+
+    const sucursalOptions = useMemo(() => {
+        const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+        const userSucursales = userData.sucursales || [];
+        return userSucursales.map((suc: any) => ({
+            value: suc.idSucursal,
+            label: suc.nombre,
+        }));
+    }, [idSucursal]);
 
     // Búsqueda
     const [codigo, setCodigo] = useState("");
@@ -45,25 +58,74 @@ function PuntoVenta() {
     const [cargandoTurno, setCargandoTurno] = useState(true);
     const menuCajaRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const fetchTurno = async () => {
-            try {
-                setCargandoTurno(true);
-                const turno = await obtenerTurnoActivo();
-                if (turno && turno.estado === 'ABIERTO') {
-                    setTurnoActivo(turno);
-                } else {
-                    setTurnoActivo(null);
-                    setMostrarModalCaja(true);
-                }
-            } catch (err) {
-                console.error("Error al cargar turno", err);
-            } finally {
-                setCargandoTurno(false);
+    // Sucursal Selector State
+    const [mostrarSelectorSucursal, setMostrarSelectorSucursal] = useState(false);
+
+    const loadTurnoCaja = async () => {
+        try {
+            setCargandoTurno(true);
+            const turno = await obtenerTurnoActivo();
+            if (turno && turno.estado === 'ABIERTO') {
+                setTurnoActivo(turno);
+            } else {
+                setTurnoActivo(null);
+                setMostrarModalCaja(true);
             }
-        };
-        fetchTurno();
+        } catch (err) {
+            console.error("Error al cargar turno", err);
+        } finally {
+            setCargandoTurno(false);
+        }
+    };
+
+    useEffect(() => {
+        const cachedSucursal = localStorage.getItem("id_sucursal");
+        if (cachedSucursal) {
+            const sid = Number(cachedSucursal);
+            setIdSucursal(sid);
+            loadTurnoCaja();
+        } else {
+            setMostrarSelectorSucursal(true);
+            setCargandoTurno(false);
+        }
     }, []);
+
+    const handleSeleccionarSucursal = async (sid: number) => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await apiFetch<any>("/auth/refresh", {
+                method: "POST",
+                body: JSON.stringify({ token, sucursal: sid })
+            });
+
+            if (response && response.success && response.token) {
+                localStorage.setItem("token", response.token);
+                localStorage.setItem("id_sucursal", sid.toString());
+                
+                const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+                userData.permisos_crud = response.permisos_crud;
+                localStorage.setItem("user_data", JSON.stringify(userData));
+
+                setIdSucursal(sid);
+                setMostrarSelectorSucursal(false);
+                setCarrito([]); // Clear POS cart on branch switch
+
+                try {
+                    const pantallas = await getPantallasUsuario(sid.toString());
+                    savePantallasToLocalStorage(pantallas);
+                } catch (pe) {
+                    console.error("Error reloading screens on branch select", pe);
+                }
+
+                await loadTurnoCaja();
+            } else {
+                showError("Error", "No se pudo actualizar la sesión con la sucursal seleccionada");
+            }
+        } catch (err: any) {
+            console.error("Error al seleccionar sucursal", err);
+            showError("Error", err?.message || "Ocurrió un error al configurar la sucursal");
+        }
+    };
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -251,6 +313,15 @@ function PuntoVenta() {
         <MainLayout>
             <div className="h-[calc(100vh-100px)] flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="w-56 shrink-0">
+                        <SearchableSelect
+                            options={sucursalOptions}
+                            value={idSucursal}
+                            onChange={(val) => handleSeleccionarSucursal(Number(val))}
+                            placeholder="Seleccionar Sucursal"
+                        />
+                    </div>
+
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between px-4 py-3 min-w-48 relative" ref={menuCajaRef}>
                         {turnoActivo ? (
                             <div className="flex items-center justify-between w-full">
@@ -400,24 +471,40 @@ function PuntoVenta() {
                 />
             )}
 
-            {/* Si no tiene turno ni sucursal
-            {mostrarModalCaja && !idSucursal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center animate-in zoom-in-95 duration-200">
-                        <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <FiRefreshCcw className="text-amber-500" size={28} />
+            {mostrarSelectorSucursal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 border border-slate-100 animate-in zoom-in-95 duration-200 text-center">
+                        <div className="w-12 h-12 bg-indigo-50/80 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+                            <FaBuilding className="text-indigo-600 animate-pulse" size={24} />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-800 mb-2">Selecciona Sucursal</h3>
-                        <p className="text-gray-500 mb-6">Debes seleccionar una sucursal en el panel superior antes de poder abrir la caja.</p>
-                        <button
-                            onClick={() => setMostrarModalCaja(false)}
-                            className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition-colors"
-                        >
-                            Entendido
-                        </button>
+                        <h3 className="text-lg font-black text-slate-800 mb-1 font-sans">Seleccionar Sucursal</h3>
+                        <p className="text-xs text-slate-500 mb-6 font-medium font-sans">Elige la sucursal para operar la caja</p>
+                        
+                        <div className="space-y-2">
+                            {(() => {
+                                const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+                                const userSucursales = userData.sucursales || [];
+                                if (userSucursales.length === 0) {
+                                    return (
+                                        <div className="text-center py-4 text-slate-400 font-bold font-sans text-sm">
+                                            No tienes sucursales asignadas.
+                                        </div>
+                                    );
+                                }
+                                return userSucursales.map((suc: any) => (
+                                    <button
+                                        key={suc.idSucursal}
+                                        onClick={() => handleSeleccionarSucursal(suc.idSucursal)}
+                                        className="w-full text-center py-3 px-4 border border-slate-100 hover:border-indigo-600 hover:bg-indigo-50/10 rounded-xl transition-all duration-200 font-bold text-slate-700 hover:text-indigo-600 text-sm font-sans outline-none focus:border-indigo-600 focus:bg-indigo-50/10"
+                                    >
+                                        {suc.nombre}
+                                    </button>
+                                ));
+                            })()}
+                        </div>
                     </div>
                 </div>
-            )} */}
+            )}
         </MainLayout>
     );
 }
