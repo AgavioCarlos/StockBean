@@ -3,11 +3,11 @@ import MainLayout from "../components/Layouts/MainLayout";
 import Footer from "../components/Layouts/Footer";
 import ConfiguracionEmpresa from '../components/ConfiguracionEmpresa';
 import { FiTrendingUp, FiBox, FiUsers, FiDollarSign, FiArrowRight, FiActivity } from 'react-icons/fi';
-import { obtenerReporteVentas, obtenerStatsDashboard } from '../features/Reporte_ventas/ReporteVentasService';
-import type { VentaReporte, IDashboardStats } from '../features/Reporte_ventas/reporte_ventas.interface';
+import { obtenerReporteVentas, obtenerStatsDashboard } from '../features/Reportes/ReporteVentasService';
+import type { VentaReporte, IDashboardStats } from '../features/Reportes/reporte_ventas.interface';
 import { consultarClientes } from '../services/Clientes';
 
-import VentasBarChart from '../features/Reporte_ventas/components/VentasBarChart';
+import VentasBarChart from '../features/Reportes/components/VentasBarChart';
 
 function Home() {
   const [showConfiguracionEmpresa, setShowConfiguracionEmpresa] = useState(false);
