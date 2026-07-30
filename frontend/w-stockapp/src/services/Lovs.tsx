@@ -15,7 +15,7 @@ export async function Productos(signal?: AbortSignal) {
 }
 
 export async function Sucursales(signal?: AbortSignal) {
-    return apiFetch("/sucursales/mis-sucursales", { signal });
+    return apiFetch("/sucursales", { signal });
 }
 
 export async function Categorias(signal?: AbortSignal) {
@@ -38,4 +38,8 @@ export async function TipoPrecios(signal?: AbortSignal) {
 
 export async function PantallasPadres(signal?: AbortSignal) {
     return apiFetch("/pantallas/padres", { signal });
+}
+
+export async function Proveedores(signal?: AbortSignal) {
+    return apiFetch("/proveedores", { signal });
 }
