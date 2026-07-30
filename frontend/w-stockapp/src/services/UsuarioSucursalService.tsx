@@ -17,15 +17,15 @@ export interface Sucursal {
 }
 
 export interface UsuarioSucursal {
-    idUsuarioSucursal: number;
-    usuario: Usuario;
-    sucursal: Sucursal;
+    idUsuarioSucursal?: number;
+    usuario: { id_usuario: number };
+    sucursal: { idSucursal: number };
     status: boolean;
 }
 
 export interface UsuarioSucursalResponse {
     idUsuarioSucursal: number;
-    idUsuario: number;
+    id_usuario: number;
     idSucursal: number;
     nombre: string;
     direccion: string;
@@ -34,14 +34,7 @@ export interface UsuarioSucursalResponse {
 
 const ENDPOINT = "/usuario-sucursales";
 
-export const listarUsuarioSucursales = async (): Promise<UsuarioSucursal[]> => {
-    return await apiFetch<UsuarioSucursal[]>(ENDPOINT) || [];
-};
-
 export const asignarUsuarioSucursal = async (data: Partial<UsuarioSucursal>): Promise<UsuarioSucursal> => {
-    // We need to send { usuario: { idUsuario: ... }, sucursal: { idSucursal: ... } }
-    // or however the backend expects it.
-    // The backend expects UsuarioSucursal object.
     return await apiFetch<UsuarioSucursal>(ENDPOINT, {
         method: "POST",
         body: JSON.stringify(data),
