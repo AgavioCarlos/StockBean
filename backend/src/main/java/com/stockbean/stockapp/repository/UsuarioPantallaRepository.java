@@ -26,4 +26,7 @@ public interface UsuarioPantallaRepository extends JpaRepository<AdminUsuarioPan
             "WHERE a.usuario.id_usuario = :idUsuario " + 
             "AND us.sucursal.idSucursal = :idSucursal")
     List<AdminUsuarioPantalla> findByUsuarioId(@Param("idUsuario") Integer idUsuario, @Param("idSucursal") Integer idSucursal);
+
+    @Query("SELECT a FROM AdminUsuarioPantalla a WHERE a.usuario.id_usuario = :idUsuario")
+    List<AdminUsuarioPantalla> findByUsuarioIdDirecto(@Param("idUsuario") Integer idUsuario);
 }

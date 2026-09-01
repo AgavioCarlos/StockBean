@@ -15,7 +15,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     @Query("SELECT u FROM Usuario u, EmpresaUsuario eu WHERE u.id_usuario = eu.usuario.id_usuario AND eu.empresa.idEmpresa = :idEmpresa")
     List<Usuario> findByEmpresaId(@Param("idEmpresa") Integer idEmpresa);
 
-    // Consulta usuario en sucursal
-    @Query("SELECT u FROM Usuario u, UsuarioSucursal us WHERE u.id_usuario = us.usuario.id_usuario AND us.sucursal.idSucursal = :idSucursal AND u.cuenta = :cuenta")
+    @Query("SELECT u FROM Usuario u, UsuarioSucursal us WHERE u.id_usuario = us.usuario.id_usuario AND us.sucursal.idSucursal = :idSucursal AND u.cuenta = :cuenta AND us.status = true")
     List<Usuario> findByCuentaSucursal(@Param("cuenta") String cuenta, @Param("idSucursal") Integer idSucursal);
+
+    @Query("SELECT u FROM Usuario u WHERE u.persona.id_persona = :idPersona")
+    Optional<Usuario> findByPersonaId(@Param("idPersona") Integer idPersona);
 }
