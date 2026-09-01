@@ -1,4 +1,5 @@
 package com.stockbean.stockapp.controller;
+
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -22,15 +23,18 @@ import com.stockbean.stockapp.service.UsuarioAccionService;
 @RestController
 @RequestMapping("/usuarios-acciones")
 public class UsuarioAccionController {
-    private static final Logger log = LoggerFactory.getLogger(UsuarioAccionController.class);
+    // private static final Logger log =
+    // LoggerFactory.getLogger(UsuarioAccionController.class);
     @Autowired
     private UsuarioAccionService usuarioAccionService;
 
     @GetMapping("/{idUsuario}")
-    public ResponseEntity<List<UsuarioAccionDTO>> obtenerMatriz(@PathVariable Integer idUsuario, @RequestParam Integer idSucursal) {
+    public ResponseEntity<List<UsuarioAccionDTO>> obtenerMatriz(@PathVariable Integer idUsuario,
+            @RequestParam Integer idSucursal) {
         List<UsuarioAccionDTO> matriz = usuarioAccionService.obtenerMatrizPermisos(idUsuario, idSucursal);
         return ResponseEntity.ok(matriz);
     }
+
     @PostMapping("/{idUsuario}")
     public ResponseEntity<Map<String, String>> guardarPermisos(
             @PathVariable Integer idUsuario,

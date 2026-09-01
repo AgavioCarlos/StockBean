@@ -28,8 +28,8 @@ public class PantallaController {
     @Autowired
     private AuthHelper authHelper;
 
-    @GetMapping
-    public ResponseEntity<?> getPantallasUsuario(@PathVariable Integer idSucursal) {
+    @GetMapping({"/usuario/{idSucursal}", "/usuario"})
+    public ResponseEntity<?> getPantallasUsuario(@PathVariable(required = false) Integer idSucursal) {
         Integer idUsuario = authHelper.getIdUsuarioFromToken();
         if (idUsuario == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

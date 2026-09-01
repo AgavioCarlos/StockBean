@@ -2,7 +2,6 @@ package com.stockbean.stockapp.controller;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.stockbean.stockapp.dto.LoginRequest;
 import com.stockbean.stockapp.dto.RegistroRequest;
 import com.stockbean.stockapp.service.AuthService;
@@ -39,9 +37,22 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
-        String token = request.get("token");
-        LoginResult result = authService.refreshToken(token);
+    public ResponseEntity<?> refreshToken(@RequestBody Map<String, Object> request) {
+        String token = (String) request.get("token");
+        Integer sucursal = null;
+        if (request.containsKey("sucursal") && request.get("sucursal") != null) {
+            Object sVal = request.get("sucursal");
+            if (sVal instanceof Number) {
+                sucursal = ((Number) sVal).intValue();
+            } else if (sVal instanceof String && !((String) sVal).isEmpty()) {
+                try {
+                    sucursal = Integer.parseInt((String) sVal);
+                } catch (NumberFormatException e) {
+                    // Ignore
+                }
+            }
+        }
+        LoginResult result = authService.refreshToken(token, sucursal);
         return ResponseEntity.status(result.getHttpStatus()).body(result.getBody());
     }
 

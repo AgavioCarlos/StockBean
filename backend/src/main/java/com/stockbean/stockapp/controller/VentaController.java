@@ -66,7 +66,7 @@ public class VentaController {
     // ─────────────────────────────────────────────────────────────
     @GetMapping
     public ResponseEntity<?> listarVentas(
-            @RequestParam Integer idSucursal,
+            @RequestParam(required = false) Integer idSucursal,
             @AuthenticationPrincipal UsuarioPrincipal principal) {
         try {
             List<Venta> ventas = ventaService.listarVentasPorSucursal(idSucursal, principal.getId());
