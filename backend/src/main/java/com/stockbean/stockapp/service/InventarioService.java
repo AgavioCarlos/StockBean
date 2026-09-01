@@ -42,6 +42,9 @@ public class InventarioService {
     @Autowired
     private SucursalAccessService sucursalAccessService;
 
+    @Autowired
+    private com.stockbean.stockapp.repository.UsuarioSucursalRepository usuarioSucursalRepository;
+
     public List<Inventario> listarPorUsuarioYSucursal(Integer idUsuario, Integer idSucursal) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
@@ -57,6 +60,54 @@ public class InventarioService {
 
         inventarios.forEach(inv -> {
             HistorialPrecios hp = priceMap.get(inv.getProducto().getId_producto());
+            if (hp != null) {
+                inv.setPrecioNuevo(hp.getPrecioNuevo());
+                inv.setPrecioAnterior(hp.getPrecioAnterior());
+                inv.setIdTipoPrecio(hp.getIdTipoPrecio());
+                inv.setMotivo(hp.getMotivo());
+            }
+        });
+
+        return inventarios;
+    }
+
+    public List<Inventario> listarPorUsuarioYMultipleSucursales(Integer idUsuario, List<Integer> idsSucursales) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
+
+        final List<Integer> finalIds;
+        if (!"SISTEM".equalsIgnoreCase(usuario.getNombre_rol()) && !"ADMIN".equalsIgnoreCase(usuario.getNombre_rol())) {
+            List<com.stockbean.stockapp.dto.UsuarioSucursalResponse> userSucursales = usuarioSucursalRepository.findByUsuarioIdUsuario(idUsuario);
+            List<Integer> allowedIds = userSucursales.stream()
+                    .filter(us -> Boolean.TRUE.equals(us.getStatus()))
+                    .map(com.stockbean.stockapp.dto.UsuarioSucursalResponse::getIdSucursal)
+                    .collect(Collectors.toList());
+
+            finalIds = idsSucursales.stream()
+                    .filter(allowedIds::contains)
+                    .collect(Collectors.toList());
+        } else {
+            finalIds = idsSucursales;
+        }
+
+        if (finalIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Inventario> inventarios = inventarioRepository.findBySucursalIdsAndStatusTrue(finalIds);
+
+        List<HistorialPrecios> prices = historialPreciosRepository.findAll().stream()
+                .filter(hp -> hp.getProducto() != null && hp.getSucursal() != null && finalIds.contains(hp.getSucursal().getIdSucursal()))
+                .collect(Collectors.toList());
+
+        Map<String, HistorialPrecios> priceMap = prices.stream()
+                .collect(Collectors.toMap(
+                        hp -> hp.getProducto().getId_producto() + "-" + hp.getSucursal().getIdSucursal(),
+                        hp -> hp,
+                        (existente, nuevo) -> nuevo));
+
+        inventarios.forEach(inv -> {
+            HistorialPrecios hp = priceMap.get(inv.getProducto().getId_producto() + "-" + inv.getSucursal().getIdSucursal());
             if (hp != null) {
                 inv.setPrecioNuevo(hp.getPrecioNuevo());
                 inv.setPrecioAnterior(hp.getPrecioAnterior());

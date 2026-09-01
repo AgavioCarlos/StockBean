@@ -14,6 +14,7 @@ import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
 import com.stockbean.stockapp.repository.PersonaEmpresaRepository;
 import com.stockbean.stockapp.repository.UsuarioRepository;
 import org.springframework.lang.NonNull;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class PersonaService {
@@ -28,6 +29,9 @@ public class PersonaService {
 
     @Autowired
     private PersonaEmpresaRepository personaEmpresaRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private static final Integer ID_ROL_SISTEMAS = 1;
 
@@ -105,7 +109,19 @@ public class PersonaService {
         persona.setEmail(personaActualizada.getEmail());
         persona.setStatus(personaActualizada.getStatus());
         persona.setFecha_ultima_modificacion(LocalDateTime.now());
-        return personaRepository.save(persona);
+
+        if (personaActualizada.getPassword() != null && !personaActualizada.getPassword().isEmpty()) {
+            java.util.Optional<Usuario> usuarioOpt = usuarioRepository.findByPersonaId(persona.getId_persona());
+            if (usuarioOpt.isPresent()) {
+                Usuario usuario = usuarioOpt.get();
+                usuario.setPassword(passwordEncoder.encode(personaActualizada.getPassword()));
+                usuarioRepository.save(usuario);
+            }
+        }
+
+        Persona guardada = personaRepository.save(persona);
+        guardada.setPassword(null);
+        return guardada;
     }
 
     @Transactional

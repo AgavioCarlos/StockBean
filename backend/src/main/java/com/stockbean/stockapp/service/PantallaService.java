@@ -27,7 +27,11 @@ public class PantallaService {
 
     public List<PantallaDTO> findPantallasUsuario(Integer idUsuario, Integer idSucursal) {
         List<AdminUsuarioPantalla> permisos;
-        permisos = adminUsuarioPantallaRepository.findByUsuarioId(idUsuario, idSucursal);
+        if (idSucursal != null) {
+            permisos = adminUsuarioPantallaRepository.findByUsuarioId(idUsuario, idSucursal);
+        } else {
+            permisos = adminUsuarioPantallaRepository.findByUsuarioIdDirecto(idUsuario);
+        }
 
         return permisos.stream()
                 .filter(p -> Boolean.TRUE.equals(p.getVer()))
