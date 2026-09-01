@@ -20,6 +20,14 @@ public interface InventarioRepository extends JpaRepository<Inventario, Integer>
                         "AND i.producto.status = true")
         List<Inventario> findBySucursalIdAndStatusTrue(@Param("idSucursal") Integer idSucursal);
 
+        @Query("SELECT i FROM Inventario i " +
+                        "JOIN FETCH i.producto " +
+                        "JOIN FETCH i.sucursal " +
+                        "WHERE i.sucursal.idSucursal IN :idsSucursales " +
+                        "AND i.status = true " +
+                        "AND i.producto.status = true")
+        List<Inventario> findBySucursalIdsAndStatusTrue(@Param("idsSucursales") List<Integer> idsSucursales);
+
         // POS: Buscar producto por código de barras en una sucursal
         @Query("SELECT i FROM Inventario i " +
                         "JOIN FETCH i.producto p " +
