@@ -26,6 +26,9 @@ public class InventarioController {
     @Autowired
     private InventarioService inventarioService;
 
+    @Autowired
+    private com.stockbean.stockapp.repository.UsuarioSucursalRepository usuarioSucursalRepository;
+
     @GetMapping
     public ResponseEntity<?> listar(
             @AuthenticationPrincipal UsuarioPrincipal principal,
@@ -35,7 +38,18 @@ public class InventarioController {
             Integer sucursalFinal = idSucursal != null ? idSucursal : principal.getIdSucursal();
 
             if (sucursalFinal == null) {
-                return ResponseEntity.badRequest().body("No se ha especificado una sucursal.");
+                List<com.stockbean.stockapp.dto.UsuarioSucursalResponse> userSucursales = usuarioSucursalRepository.findByUsuarioIdUsuario(principal.getId());
+                java.util.List<Integer> allowedIds = userSucursales.stream()
+                        .filter(us -> Boolean.TRUE.equals(us.getStatus()))
+                        .map(com.stockbean.stockapp.dto.UsuarioSucursalResponse::getIdSucursal)
+                        .collect(java.util.stream.Collectors.toList());
+
+                if (allowedIds.isEmpty()) {
+                    return ResponseEntity.ok(new java.util.ArrayList<>());
+                }
+
+                List<Inventario> inventario = inventarioService.listarPorUsuarioYMultipleSucursales(principal.getId(), allowedIds);
+                return ResponseEntity.ok(inventario);
             }
 
             List<Inventario> inventario = inventarioService.listarPorUsuarioYSucursal(principal.getId(), sucursalFinal);
