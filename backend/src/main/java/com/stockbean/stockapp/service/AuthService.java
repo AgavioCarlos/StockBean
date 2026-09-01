@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -67,6 +68,12 @@ public class AuthService {
     @Autowired
     private EmpresaUsuarioRepository empresaUsuarioRepository;
 
+    @Autowired
+    private com.stockbean.stockapp.repository.SucursalRepository sucursalRepository;
+
+    @Autowired
+    private com.stockbean.stockapp.repository.UsuarioSucursalRepository usuarioSucursalRepository;
+
     public static class LoginResult {
         private final boolean success;
         private final int httpStatus; // 200, 401, 402, 500
@@ -101,9 +108,11 @@ public class AuthService {
             return errorResult(401, "El usuario no existe");
         }
 
-        List<Usuario> usuarios = usuarioRepository.findByCuentaSucursal(cuenta, sucursal);
-        if (usuarios.isEmpty()) {
-            return errorResult(401, "El usuario no existe en la sucursal");
+        if (sucursal != null) {
+            List<Usuario> usuarios = usuarioRepository.findByCuentaSucursal(cuenta, sucursal);
+            if (usuarios.isEmpty()) {
+                return errorResult(401, "El usuario no existe en la sucursal");
+            }
         }
 
         try {
@@ -115,13 +124,6 @@ public class AuthService {
             return errorResult(500, "Error de autenticación");
         }
 
-        // if (!user.getCuenta().equals("sistemas")) {
-        // LoginResult suscripcionCheck = validarSuscripcion(user, empresaUsuario);
-        // if (suscripcionCheck != null) {
-        // return suscripcionCheck;
-        // }
-        // }
-
         final UserDetails userDetails = userDetailsService.loadUserByUsername(cuenta);
         final String jwt = jwtUtil.generateToken(userDetails, user.getId_usuario(), user.getId_rol(),
                 user.getNombre_rol(), sucursal);
@@ -132,8 +134,27 @@ public class AuthService {
         respuesta.put("mensaje", "Autenticación exitosa");
         respuesta.put("token", jwt);
         if (!user.getCuenta().equals("sistemas")) {
-            // respuesta.put("empresa", empresaUsuario);
             respuesta.put("permisos_crud", permisosCrud);
+        }
+
+        // Obtener la lista de sucursales permitidas
+        List<com.stockbean.stockapp.dto.UsuarioSucursalResponse> sucursalesList;
+        if ("SISTEM".equalsIgnoreCase(user.getNombre_rol())) {
+            sucursalesList = sucursalRepository.findAll().stream()
+                    .filter(s -> Boolean.TRUE.equals(s.getStatus()))
+                    .map(s -> new com.stockbean.stockapp.dto.UsuarioSucursalResponse(null, user.getId_usuario(), s.getIdSucursal(), s.getNombre(), s.getDireccion(), s.getStatus()))
+                    .collect(Collectors.toList());
+        } else {
+            sucursalesList = usuarioSucursalRepository.findByUsuarioIdUsuario(user.getId_usuario());
+        }
+        respuesta.put("sucursales", sucursalesList);
+
+        // Obtener id de la empresa
+        List<Integer> companyIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(user.getId_usuario());
+        if (!companyIds.isEmpty()) {
+            respuesta.put("id_empresa", companyIds.get(0));
+        } else {
+            respuesta.put("id_empresa", null);
         }
 
         respuesta.put("id_usuario", user.getId_usuario());
@@ -154,23 +175,28 @@ public class AuthService {
         return new LoginResult(true, 200, respuesta);
     }
 
-    public LoginResult refreshToken(String token) {
+    public LoginResult refreshToken(String token, Integer nuevoIdSucursal) {
         try {
             String username = jwtUtil.extractUsername(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
             if (jwtUtil.validateToken(token, userDetails)) {
                 Usuario user = usuarioService.findByCuenta(username);
-                Integer idSucursal = jwtUtil.extractIdSucursal(token);
+                Integer idSucursal = nuevoIdSucursal != null ? nuevoIdSucursal : jwtUtil.extractIdSucursal(token);
                 String newToken = jwtUtil.generateToken(userDetails, user.getId_usuario(), user.getId_rol(),
                         user.getNombre_rol(), idSucursal);
 
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
                 response.put("token", newToken);
+                response.put("id_sucursal", idSucursal);
+
+                Map<Integer, Map<String, List<String>>> permisosCrud = construirPermisosCrud(user, idSucursal);
+                response.put("permisos_crud", permisosCrud);
+
                 response.put("mensaje", "Token refrescado correctamente");
 
-                log.info("Token refrescado para usuario: {}, id_rol: {}", username, user.getId_rol());
+                log.info("Token refrescado para usuario: {}, id_rol: {}, sucursal: {}", username, user.getId_rol(), idSucursal);
                 return new LoginResult(true, 200, response);
             } else {
                 log.warn("Token inválido o expirado para usuario: {}", username);
@@ -229,9 +255,13 @@ public class AuthService {
     }
 
     private Map<String, List<String>> obtenerPermisosDeUsuario(Integer idUsuario, Integer idSucursal) {
-        log.info("AuthService - obtenerPermisosDeUsuario: idUsuario={}, idEmpresa={}", idUsuario);
-        List<AdminUsuarioPantalla> acciones = adminUsuarioPantallaRepository
-                .findByUsuarioId(idUsuario, idSucursal);
+        log.info("AuthService - obtenerPermisosDeUsuario: idUsuario={}, idSucursal={}", idUsuario, idSucursal);
+        List<AdminUsuarioPantalla> acciones;
+        if (idSucursal != null) {
+            acciones = adminUsuarioPantallaRepository.findByUsuarioId(idUsuario, idSucursal);
+        } else {
+            acciones = adminUsuarioPantallaRepository.findByUsuarioIdDirecto(idUsuario);
+        }
         log.info("AuthService - Encontrados {} registros en admin_usuario_pantalla", acciones.size());
         Map<String, List<String>> permisos = mapearPermisos(acciones);
         log.info("AuthService - Permisos mapeados resultantes: {}", permisos);

@@ -62,6 +62,9 @@ public class VentaService {
     @Autowired
     private SucursalAccessService sucursalAccessService;
 
+    @Autowired
+    private com.stockbean.stockapp.repository.UsuarioSucursalRepository usuarioSucursalRepository;
+
     // ─────────────────────────────────────────────────────────────
     // BUSCAR PRODUCTOS PARA EL PUNTO DE VENTA
     // ─────────────────────────────────────────────────────────────
@@ -239,9 +242,22 @@ public class VentaService {
         return ventaGuardada;
     }
 
-    public List<Venta> listarVentasPorSucursal(@NonNull Integer idSucursal, @NonNull Integer idUsuario) {
+    public List<Venta> listarVentasPorSucursal(Integer idSucursal, @NonNull Integer idUsuario) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
+
+        if (idSucursal == null) {
+            List<com.stockbean.stockapp.dto.UsuarioSucursalResponse> userSucursales = usuarioSucursalRepository.findByUsuarioIdUsuario(idUsuario);
+            java.util.List<Integer> allowedIds = userSucursales.stream()
+                    .filter(us -> Boolean.TRUE.equals(us.getStatus()))
+                    .map(com.stockbean.stockapp.dto.UsuarioSucursalResponse::getIdSucursal)
+                    .collect(java.util.stream.Collectors.toList());
+            if (allowedIds.isEmpty()) {
+                return new java.util.ArrayList<>();
+            }
+            return ventaRepository.findBySucursalIds(allowedIds);
+        }
+
         validarAccesoSucursal(usuario, idSucursal);
         return ventaRepository.findBySucursalId(idSucursal);
     }
