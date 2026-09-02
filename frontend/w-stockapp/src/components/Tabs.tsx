@@ -42,7 +42,6 @@ const Tabs: React.FC<TabsProps> = ({
           aria-label="Pestañas de navegación"
           className="flex space-x-6 relative"
         >
-          {/* Animated Indicator */}
           <div
             className="absolute bottom-0 h-0.5 bg-empresa-primario rounded-t-full shadow-[0_-2px_10px_rgba(var(--color-primario-rgb),0.4)] transition-all duration-300 ease-out"
             style={{
@@ -108,7 +107,7 @@ const Tabs: React.FC<TabsProps> = ({
               aria-labelledby={`tab-${tab.key}`}
               tabIndex={0}
               className={`flex-1 flex flex-col h-full outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 tab-content ${
-                activeTab === tab.key ? "block" : "hidden"
+                activeTab === tab.key ? "" : "hidden"
               }`}
             >
               {tab.content}
