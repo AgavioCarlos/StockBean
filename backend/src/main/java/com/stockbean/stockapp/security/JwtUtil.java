@@ -69,11 +69,11 @@ public class JwtUtil {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        // Extraer rol de las authorities si es necesario, o pasar null
         return createToken(claims, userDetails.getUsername());
     }
 
-    public String generateToken(UserDetails userDetails, Integer idUsuario, Integer idRol, String nombreRol, Integer Sucursal) {
+    public String generateToken(UserDetails userDetails, Integer idUsuario, Integer idRol, String nombreRol,
+            Integer Sucursal) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id_usuario", idUsuario);
         claims.put("id_rol", idRol);
@@ -88,7 +88,7 @@ public class JwtUtil {
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10)) // 10 min
-                .signWith(getSigningKey()) // El algoritmo se infiere de la clave
+                .signWith(getSigningKey())
                 .compact();
     }
 
