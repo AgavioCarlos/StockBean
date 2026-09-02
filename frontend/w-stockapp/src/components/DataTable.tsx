@@ -34,16 +34,23 @@ interface Props<T> {
   title?: string;
   onRowClick?: (item: T) => void;
   actionContent?: React.ReactNode;
+  onFilteredDataChange?: (data: T[]) => void;
 }
 
-export const DataTable = <T extends Record<string, any>>({ data, columns, title, onRowClick, actionContent }: Props<T>) => {
+export const DataTable = <T extends Record<string, any>>({ 
+  data, 
+  columns, 
+  title, 
+  onRowClick, 
+  actionContent,
+  onFilteredDataChange 
+}: Props<T>) => {
   const [globalSearch, setGlobalSearch] = useState('');
   const [columnFilters, setColumnFilters] = useState<Record<number, string>>({});
   const [sortConfig, setSortConfig] = useState<{ key: keyof T; direction: 'asc' | 'desc' } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
-  // Lógica de ordenamiento
   const handleSort = (key: keyof T) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -52,15 +59,12 @@ export const DataTable = <T extends Record<string, any>>({ data, columns, title,
     setSortConfig({ key, direction });
   };
 
-  // Lógica de filtrado y ordenamiento dinámico
   const processedData = useMemo(() => {
     let filtered = data.filter((row) => {
       const gTerm = globalSearch.toLowerCase();
 
-      // 1. Buscador global (Recursivo)
       const matchesGlobal = !gTerm || getSearchableString(row).includes(gTerm);
 
-      // 2. Filtros por columna (usando índice para evitar colisiones de keys duplicadas)
       const matchesColumns = columns.every((col, idx) => {
         const filterVal = columnFilters[idx];
         if (!filterVal) return true;
@@ -71,7 +75,6 @@ export const DataTable = <T extends Record<string, any>>({ data, columns, title,
       return matchesGlobal && matchesColumns;
     });
 
-    // 3. Ordenamiento
     if (sortConfig) {
       filtered.sort((a, b) => {
         const col = columns.find(c => c.key === sortConfig.key);
@@ -90,17 +93,21 @@ export const DataTable = <T extends Record<string, any>>({ data, columns, title,
     return filtered;
   }, [data, globalSearch, columnFilters, sortConfig, columns]);
 
-  // Reset to first page when filters change
   React.useEffect(() => {
     setCurrentPage(1);
   }, [globalSearch, columnFilters, sortConfig, data]);
+
+  React.useEffect(() => {
+    if (onFilteredDataChange) {
+      onFilteredDataChange(processedData);
+    }
+  }, [processedData, onFilteredDataChange]);
 
   const totalPages = Math.ceil(processedData.length / ITEMS_PER_PAGE);
   const paginatedData = processedData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
     <div className="flex flex-col w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      {/* Header, Search, and Actions */}
       <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
         {title && <h3 className="text-base font-bold text-slate-800">{title}</h3>}
 
@@ -125,8 +132,6 @@ export const DataTable = <T extends Record<string, any>>({ data, columns, title,
           )}
         </div>
       </div>
-
-      {/* Table Container */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-100">
           <thead className="bg-slate-50/80">
@@ -149,8 +154,7 @@ export const DataTable = <T extends Record<string, any>>({ data, columns, title,
                     )}
                   </div>
 
-                  {/* Column Specific Filter */}
-                  <div className="relative w-full max-w-[140px] font-normal">
+                  {/* <div className="relative w-full max-w-[140px] font-normal">
                     <span className="absolute inset-y-0 left-0 pl-2 flex items-center text-slate-400 pointer-events-none">
                       <HiOutlineFilter className="h-3 w-3" />
                     </span>
@@ -161,7 +165,7 @@ export const DataTable = <T extends Record<string, any>>({ data, columns, title,
                       value={columnFilters[idx] || ''}
                       onChange={(e) => setColumnFilters({ ...columnFilters, [idx]: e.target.value })}
                     />
-                  </div>
+                  </div> */}
                 </th>
               ))}
             </tr>

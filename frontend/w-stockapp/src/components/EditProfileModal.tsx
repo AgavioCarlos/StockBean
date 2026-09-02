@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FaTimes, FaUser, FaEnvelope, FaIdCard, FaCheckCircle, FaSave } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { FaTimes, FaUser, FaEnvelope, FaIdCard, FaCheckCircle, FaSave, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import { actualizarPersona } from '../features/Persona/PersonaService';
 
@@ -10,14 +10,16 @@ interface EditProfileModalProps {
     onUpdate: (updatedPersona: any) => void;
 }
 
-const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, persona, onUpdate }) => {
+const EditProfileModal = ({ isOpen, onClose, persona, onUpdate }: EditProfileModalProps) => {
     const [isProcessing, setIsProcessing] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         nombre: '',
         apellido_paterno: '',
         apellido_materno: '',
         email: '',
-        cuenta: ''
+        cuenta: '',
+        password: ''
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -29,10 +31,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pe
                 apellido_paterno: persona.apellido_paterno || '',
                 apellido_materno: persona.apellido_materno || '',
                 email: persona.email || '',
-                cuenta: persona.cuenta || ''
+                cuenta: persona.cuenta || '',
+                password: ''
             });
+            setShowPassword(false);
         }
-    }, [persona]);
+    }, [persona, isOpen]);
 
     if (!isOpen) return null;
 
@@ -60,6 +64,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pe
         } else if (!validateEmail(formData.email)) {
             newErrors.email = 'Email inválido';
         }
+        if (formData.password && formData.password.length < 6) {
+            newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+        }
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -77,11 +84,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pe
             const response = await actualizarPersona(persona.id_persona, updatedData);
 
             if (response) {
-                // Update local storage if needed
                 const storedData = localStorage.getItem("user_data");
                 if (storedData) {
                     const userData = JSON.parse(storedData);
-                    const newUserContext = { ...userData, ...formData };
+                    const { password, ...localDataToSave } = formData;
+                    const newUserContext = { ...userData, ...localDataToSave };
                     localStorage.setItem("user_data", JSON.stringify(newUserContext));
                 }
 
@@ -207,6 +214,35 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pe
                                         }`}
                                 />
                                 {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.email}</p>}
+                            </div>
+                        </div>
+
+                        {/* Contraseña */}
+                        <div className="md:col-span-2 space-y-2">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                                Nueva Contraseña (dejar en blanco para no cambiar)
+                            </label>
+                            <div className="relative group">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                                    <FaLock size={18} />
+                                </div>
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="Nueva contraseña (mínimo 6 caracteres)"
+                                    className={`w-full pl-12 pr-12 py-3.5 bg-gray-50 border-2 rounded-2xl focus:bg-white focus:ring-4 transition-all duration-300 ${errors.password ? 'border-red-500 focus:ring-red-100' : 'border-gray-100 focus:border-blue-500 focus:ring-blue-500/10'
+                                        }`}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(prev => !prev)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors"
+                                >
+                                    {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                                </button>
+                                {errors.password && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.password}</p>}
                             </div>
                         </div>
 

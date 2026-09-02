@@ -23,7 +23,6 @@ export const SharedButton: React.FC<SharedButtonProps> = ({
 }) => {
     const isEmpresa = !!localStorage.getItem("id_empresa");
 
-    // Base styles
     const baseStyles = `
         inline-flex items-center justify-center font-medium tracking-tight 
         transition-all duration-200 ease-out outline-none whitespace-nowrap
@@ -32,7 +31,6 @@ export const SharedButton: React.FC<SharedButtonProps> = ({
         disabled:opacity-50 disabled:cursor-not-allowed
     `.replace(/\s+/g, ' ').trim();
 
-    // Sizing variants - explicit heights help consistency (Touch-target minimums applied)
     const sizeStyles = {
         sm: 'h-9 px-4 text-xs gap-1.5',
         md: 'h-11 px-6 text-sm gap-2',
@@ -40,17 +38,10 @@ export const SharedButton: React.FC<SharedButtonProps> = ({
         icon: 'h-11 w-11 !p-0 shrink-0 flex items-center justify-center'
     };
 
-    // Color/Visual variants with premium aesthetic
     const variantStyles = {
         primary: `
             bg-empresa-primario text-white border-0
-            shadow-lg shadow-black/10
-            hover:shadow-xl hover:shadow-black/20
-            hover:-translate-y-[1px]
-            focus-visible:ring-offset-2
-            relative overflow-hidden
-            before:absolute before:inset-0 before:bg-white/10 before:translate-y-[100%] hover:before:translate-y-0 before:transition-transform before:duration-300 before:pointer-events-none before:ease-out
-        `,
+            `,
         secondary: `
             bg-white text-slate-700 border border-slate-200/80 
             shadow-sm
