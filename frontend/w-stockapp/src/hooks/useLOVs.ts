@@ -13,6 +13,7 @@ const fetchers: FetcherMap = {
   marcas: Lovs.Marcas,
   tipo_precios: Lovs.TipoPrecios,
   proveedores: Lovs.Proveedores,
+  personas: Lovs.Personas,
 };
 
 const CACHE: Map<string, { data: any; ts: number }> = new Map();

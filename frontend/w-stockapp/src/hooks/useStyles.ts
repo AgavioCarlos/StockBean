@@ -5,8 +5,8 @@ export const useStyles = () => {
     const [styles, setStyles] = useState<EmpresaDiseno | null>(null);
     const [loading, setLoading] = useState(true);
     const DEFAULT_DISENO: EmpresaDiseno = {
-        colorPrimario: "#3b82f6", // Blue 500
-        colorSecundario: "#1e293b", // Slate 800
+        colorPrimario: "#3b82f6",
+        colorSecundario: "#1e293b", 
         colorAcento: "#f59e0b", // Amber 500
         colorFondo: "#f8fafc", // Slate 50
         fuenteFamilia: "'Instrument Sans', system-ui, sans-serif",

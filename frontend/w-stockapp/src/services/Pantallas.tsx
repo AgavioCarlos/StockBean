@@ -1,13 +1,17 @@
 import { Pantalla } from "../interfaces/pantalla.interface";
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
-export const getPantallasUsuario = async (sucursal: string): Promise<Pantalla[]> => {
+export const getPantallasUsuario = async (sucursal?: string): Promise<Pantalla[]> => {
     const token = localStorage.getItem("token");
 
     if (!token) {
         throw new Error("No hay token de autenticación");
     }
-    const response = await fetch(`${API_BASE_URL}/pantallas/${sucursal}}`, {
+
+    const sucursalId = sucursal || localStorage.getItem("id_sucursal") || "";
+    const url = sucursalId ? `${API_BASE_URL}/pantallas/usuario/${sucursalId}` : `${API_BASE_URL}/pantallas/usuario`;
+
+    const response = await fetch(url, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
