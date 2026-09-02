@@ -15,10 +15,6 @@ export interface EmpresaDiseno {
     temaOscuroHabilitado: boolean;
 }
 
-/**
- * Obtiene la configuración de diseño de una empresa por su ID.
- * Si no existe, devuelve null o lanza un error 204.
- */
 export async function getDisenoEmpresa(idEmpresa: number): Promise<EmpresaDiseno | null> {
     try {
         const response = await apiFetch<EmpresaDiseno>(`/empresas-diseno/empresa/${idEmpresa}`);
@@ -29,13 +25,10 @@ export async function getDisenoEmpresa(idEmpresa: number): Promise<EmpresaDiseno
     }
 }
 
-/**
- * Guarda o actualiza la configuración de diseño de una empresa.
- */
 export async function saveDisenoEmpresa(diseno: EmpresaDiseno): Promise<EmpresaDiseno | null> {
     const method = diseno.idDiseno ? "PUT" : "POST";
-    const url = diseno.idDiseno 
-        ? `/empresas-diseno/empresa/${diseno.idEmpresa}` 
+    const url = diseno.idDiseno
+        ? `/empresas-diseno/empresa/${diseno.idEmpresa}`
         : "/empresas-diseno";
 
     return apiFetch<EmpresaDiseno>(url, {
@@ -44,9 +37,6 @@ export async function saveDisenoEmpresa(diseno: EmpresaDiseno): Promise<EmpresaD
     });
 }
 
-/**
- * Sube el archivo de logotipo para una empresa y retorna el nombre del archivo guardado.
- */
 export async function uploadLogoEmpresa(idEmpresa: number, file: File): Promise<string | null> {
     const formData = new FormData();
     formData.append("file", file);
@@ -56,7 +46,6 @@ export async function uploadLogoEmpresa(idEmpresa: number, file: File): Promise<
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`
-                // No enviar 'Content-Type', fetch lo configura automáticamente con el boundary boundaries multipart/form-data
             },
             body: formData
         });

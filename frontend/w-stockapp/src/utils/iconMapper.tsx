@@ -17,17 +17,16 @@ import {
     FiShield,
 } from "react-icons/fi";
 import { BsMenuButton, BsCashCoin } from "react-icons/bs";
-import { MdOutlinePointOfSale } from "react-icons/md";
 import { RiAdminLine } from "react-icons/ri";
 import { IoIosSettings } from "react-icons/io";
 import { TbReportAnalytics } from "react-icons/tb";
-import { MdOutlinePayments } from "react-icons/md";
 import { FaUsers, FaUser } from "react-icons/fa";
 import { CgScreen } from "react-icons/cg";
 import { BiUnite } from "react-icons/bi";
 import { AiOutlineAppstoreAdd } from "react-icons/ai";
 import { GrPlan } from "react-icons/gr";
-import { MdOutlineCategory } from "react-icons/md";
+import { MdOutlineCategory, MdAddShoppingCart, MdOutlinePayments, MdOutlinePointOfSale } from "react-icons/md";
+
 
 export const iconMap: { [key: string]: React.ComponentType } = {
     // Iconos generales
@@ -79,6 +78,7 @@ export const iconMap: { [key: string]: React.ComponentType } = {
 
     //Punto de venta
     AiOutlineAppstoreAdd,
+    MdAddShoppingCart
 
 };
 

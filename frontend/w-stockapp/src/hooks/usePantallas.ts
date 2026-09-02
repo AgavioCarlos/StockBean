@@ -1,15 +1,3 @@
-/**
- * Hook personalizado para acceder a las pantallas del usuario autenticado
- * 
- * Proporciona:
- * - Lista de pantallas disponibles
- * - Función para verificar si el usuario tiene acceso a una ruta específica
- * - Función para recargar las pantallas desde el backend
- * 
- * Uso:
- * const { pantallas, hasAccess, reloadPantallas } = usePantallas();
- */
-
 import { useState, useEffect } from "react";
 import { Pantalla } from "../interfaces/pantalla.interface";
 import {
@@ -50,20 +38,11 @@ export const usePantallas = () => {
         }
     };
 
-    /**
-     * Verifica si el usuario tiene acceso a una ruta específica
-     * @param ruta - Ruta a verificar (ej: "/productos")
-     * @returns true si tiene acceso, false si no
-     */
+
     const hasAccess = (ruta: string): boolean => {
         return pantallas.some((p) => p.ruta === ruta);
     };
 
-    /**
-     * Obtiene una pantalla por su ruta
-     * @param ruta - Ruta a buscar
-     * @returns Pantalla encontrada o undefined
-     */
     const getPantallaByRuta = (ruta: string): Pantalla | undefined => {
         return pantallas.find((p) => p.ruta === ruta);
     };

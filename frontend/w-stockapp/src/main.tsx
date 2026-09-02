@@ -15,7 +15,7 @@ import Perfil from './features/Perfil/Perfil';
 import Categorias from './features/Categorias/Categorias';
 import Unidades from './features/Unidades/Unidades'
 import Permisos from './features/Permisos/Permisos';
-import Inicio from './pages/Inicio';
+import Inicio from './pages';
 import Productos from './features/Producto/Productos'
 import Marcas from './features/Marca/Marcas'
 import Clientes from './pages/Clientes'
@@ -31,22 +31,20 @@ import Inventario from './features/Inventario/Inventario';
 import HistorialPrecios from './pages/HistorialPrecios';
 import Empresas from './pages/Empresas';
 import EmpresaUsuario from './pages/EmpresaUsuario';
-import ProductoEmpresa from './features/ProductoEmpresa/ProductoEmpresa';
-import Unauthorized from './pages/Unauthorized'; // Página de acceso denegado
-import ReporteVentas from './features/Reporte_ventas/ReporteVentas';
+import Unauthorized from './components/Unauthorized'; // Página de acceso denegado
+import ReporteVentas from './features/Reportes/ReporteVentas';
 import Suscripciones from './features/Suscripcion/Suscripcion';
 // import Suscripciones from './features/Suscripcion/Suscripciones';
 import Pantallas from './features/Pantalla/Pantallas';
 import Planes from './features/Planes/Planes';
 import TiposPrecio from './features/TipoPrecio/TipoPrecio';
+import Compras from './features/Compras/Compras';
 
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <Inicio />
-    ),
+    element: (<Inicio />),
   },
   {
     path: "/home",
@@ -74,7 +72,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/unauthorized",
-    element: <Unauthorized />, // No requiere ProtectedRoute porque necesitamos mostrarla
+    element: <Unauthorized />,
   },
   {
     path: "/productos",
@@ -141,10 +139,6 @@ const router = createBrowserRouter([
     element: (<ProtectedRoute><EmpresaUsuario /></ProtectedRoute>)
   },
   {
-    path: "/producto-empresa",
-    element: (<ProtectedRoute><ProductoEmpresa /></ProtectedRoute>)
-  },
-  {
     path: "/reporte-ventas",
     element: (<ProtectedRoute><ReporteVentas /></ProtectedRoute>)
   },
@@ -152,10 +146,6 @@ const router = createBrowserRouter([
     path: "/suscripciones",
     element: (<ProtectedRoute><Suscripciones /></ProtectedRoute>)
   },
-  // {
-  //   path: "/suscripciones",
-  //   element: (<ProtectedRoute><Suscripciones /></ProtectedRoute>)
-  // },
   {
     path: "/pantallas",
     element: (<ProtectedRoute><Pantallas /></ProtectedRoute>)
@@ -167,6 +157,10 @@ const router = createBrowserRouter([
   {
     path: "/precio",
     element: (<ProtectedRoute><TiposPrecio /></ProtectedRoute>)
+  },
+  {
+    path: "/compras",
+    element: (<ProtectedRoute><Compras /></ProtectedRoute>)
   },
 
 ]);

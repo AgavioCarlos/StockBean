@@ -43,3 +43,7 @@ export async function PantallasPadres(signal?: AbortSignal) {
 export async function Proveedores(signal?: AbortSignal) {
     return apiFetch("/proveedores", { signal });
 }
+
+export async function Personas(signal?: AbortSignal) {
+    return apiFetch("/personas/mis-personas", { signal });
+}
