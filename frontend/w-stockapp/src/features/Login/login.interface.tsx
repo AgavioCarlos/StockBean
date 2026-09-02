@@ -19,4 +19,5 @@ export interface LoginResponse {
   mensaje: string;
   token: string;
   empresa: string[];
+  id_empresa?: number;
 }

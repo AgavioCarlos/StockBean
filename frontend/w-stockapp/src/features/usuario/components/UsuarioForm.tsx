@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { IoIosSave, IoMdKey } from "react-icons/io";
+import React from 'react';
+import { IoIosSave } from "react-icons/io";
 import { MdEdit, MdAdd, MdPowerSettingsNew, MdOutlineDateRange, MdPersonOutline, MdOutlineEmail, MdOutlineAdminPanelSettings } from "react-icons/md";
-import type { Usuario, Persona } from '../usuario.interface';
+import type { Persona } from '../usuario.interface';
 import { SharedInput } from '../../../components/SharedInput';
 import { SharedButton } from '../../../components/SharedButton';
 import { StatusBadge } from '../../../components/StatusBadge';
-import { consultarRoles } from '../../../services/Roles';
-import { consultarPersonas } from '../../Persona/PersonaService';
 import { UsuarioSucursales } from './UsuarioSucursales';
 import { UsuarioFormProps } from '../usuario.interface';
+import { useLOVs } from '../../../hooks/useLOVs';
 
 
 
@@ -22,13 +21,9 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
     selection,
     onToggleStatus
 }) => {
-    const [roles, setRoles] = useState<any[]>([]);
-    const [personas, setPersonas] = useState<Persona[]>([]);
-
-    useEffect(() => {
-        consultarRoles().then(setRoles).catch(console.error);
-        consultarPersonas().then(setPersonas).catch(console.error);
-    }, []);
+    const { data: lovData, loading: lovLoading } = useLOVs(['roles', 'personas']);
+    const roles = lovData.roles || [];
+    const personas: Persona[] = lovData.personas || [];
 
     const persona = values.persona || {} as Persona;
 
@@ -153,9 +148,7 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                     )}
 
                     <form id="usuario-form" onSubmit={onSave} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                        {/* Panel de Datos Personales y de Cuenta */}
                         <div className="lg:col-span-8 space-y-8">
-                            {/* Información Personal */}
                             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-l-3xl"></div>
                                 <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
@@ -166,36 +159,38 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                                         <h4 className="text-lg font-bold text-slate-800">Información Personal</h4>
                                     </div>
                                     {isEditing && (
-                                        <div className="flex-1 max-w-sm">
-                                            <select
-                                                name="persona_selector"
-                                                className="w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-slate-700"
-                                                onChange={(e) => {
-                                                    const pid = e.target.value;
-                                                    const p = personas.find(x => String(x.id_persona) === pid);
-                                                    if (p) {
-                                                        handleChange({
-                                                            target: {
-                                                                name: 'persona',
-                                                                value: {
-                                                                    ...persona,
-                                                                    ...p
-                                                                }
-                                                            }
-                                                        });
-                                                    }
-                                                }}
-                                                defaultValue=""
-                                            >
-                                                <option value="">-- Cargar persona existente --</option>
-                                                {personas.map((p) => (
-                                                    <option key={p.id_persona} value={p.id_persona}>
-                                                        {p.nombre} {p.apellido_paterno} {p.apellido_materno}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    )}
+                                         <div className="flex-1 max-w-sm">
+                                             <select
+                                                 name="persona_selector"
+                                                 className="w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-slate-700 cursor-pointer"
+                                                 onChange={(e) => {
+                                                     const pid = e.target.value;
+                                                     const p = personas.find(x => String(x.id_persona) === pid);
+                                                     if (p) {
+                                                         handleChange({
+                                                             target: {
+                                                                 name: 'persona',
+                                                                 value: {
+                                                                     ...persona,
+                                                                     ...p
+                                                                 }
+                                                             }
+                                                         });
+                                                     }
+                                                 }}
+                                                 defaultValue=""
+                                             >
+                                                 <option value="">
+                                                     {lovLoading ? "Cargando personas..." : "-- Cargar persona existente --"}
+                                                 </option>
+                                                 {personas.map((p) => (
+                                                     <option key={p.id_persona} value={p.id_persona}>
+                                                         {p.nombre} {p.apellido_paterno} {p.apellido_materno}
+                                                     </option>
+                                                 ))}
+                                             </select>
+                                         </div>
+                                     )}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                                     <SharedInput
@@ -267,31 +262,32 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                                         isEditing={isEditing}
                                         placeholder={selection ? "Dejar vacío para conservar actual" : "Requerido para nuevo usuario"}
                                     />
-                                    <div className="col-span-1 md:col-span-2 space-y-2">
-                                        <label className="block text-sm font-semibold text-slate-700">Rol del Usuario</label>
-                                        {isEditing ? (
-                                            <select
-                                                name="id_rol"
-                                                value={values.id_rol || ''}
-                                                onChange={handleChange}
-                                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-slate-700"
-                                            >
-                                                <option value="">Seleccione un rol...</option>
-                                                {roles.map((r: any) => (
-                                                    <option key={r.id_rol} value={r.id_rol}>{r.nombre}</option>
-                                                ))}
-                                            </select>
-                                        ) : (
-                                            <div className="px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-600 font-medium">
-                                                {roles.find(r => r.id_rol === values.id_rol)?.nombre || 'No asignado'}
-                                            </div>
-                                        )}
-                                    </div>
+                                     <div className="col-span-1 md:col-span-2 space-y-2">
+                                         <label className="block text-sm font-semibold text-slate-700">Rol del Usuario</label>
+                                         {isEditing ? (
+                                             <select
+                                                 name="id_rol"
+                                                 value={values.id_rol || ''}
+                                                 onChange={handleChange}
+                                                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-slate-700 cursor-pointer"
+                                             >
+                                                 <option value="">
+                                                     {lovLoading ? "Cargando roles..." : "Seleccione un rol..."}
+                                                 </option>
+                                                 {roles.map((r: any) => (
+                                                     <option key={r.id_rol} value={r.id_rol}>{r.nombre}</option>
+                                                 ))}
+                                             </select>
+                                         ) : (
+                                             <div className="px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-600 font-medium">
+                                                 {roles.find((r: any) => Number(r.id_rol) === Number(values.id_rol))?.nombre || 'No asignado'}
+                                             </div>
+                                         )}
+                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Panel Lateral: Detalles de Sistema */}
                         <div className="lg:col-span-4 space-y-6">
                             <div className="bg-white p-7 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
                                 <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">Estado del Sistema</h4>
@@ -315,8 +311,6 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                             <UsuarioSucursales idUsuario={selection.id_usuario} />
                         </div>
                     )}
-
-                    {/* Mensaje de Asistencia (Solo visible si esEditing) */}
                     <div className="text-center pb-12 pt-4">
                         <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${isEditing ? 'bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-sm' : 'text-slate-400 border border-transparent opacity-0 translate-y-2'}`}>
                             <MdOutlineDateRange className="animate-pulse" size={18} />
