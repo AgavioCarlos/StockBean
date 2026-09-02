@@ -5,7 +5,7 @@ import { useStyles } from "../../hooks/useStyles";
 import { saveDisenoEmpresa, EmpresaDiseno, uploadLogoEmpresa } from "../../services/EmpresaDisenoService";
 import { useAlertContext } from "../../context/AlertContext";
 import { FiRefreshCw, FiImage, FiType, FiDroplet, FiBox } from "react-icons/fi";
-import Swal from "sweetalert2";
+// import Swal from "sweetalert2";
 
 const PRESET_PALETTES = [
     { name: 'Corporativo', primary: '#3b82f6', secondary: '#0F172A', accent: '#f59e0b', fondo: '#f8fafc' },
@@ -69,7 +69,6 @@ function Configuracion() {
                     uploadedLogoName = newLogoName;
                 }
             } else if (uploadedLogoName && uploadedLogoName.startsWith('/src/assets/logos/')) {
-                // Si la imagen viene del estado mutado desde backend, le quitamos la ruta absoluta antes de guardarla de vuelta
                 uploadedLogoName = uploadedLogoName.split('/').pop() || uploadedLogoName;
             }
 

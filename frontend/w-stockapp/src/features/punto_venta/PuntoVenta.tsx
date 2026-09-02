@@ -24,7 +24,6 @@ function PuntoVenta() {
     const { user } = useAuth();
     const { success, error: showError, warning } = useAlerts();
 
-    // Sucursal
     const [idSucursal, setIdSucursal] = useState<number | "">("");
 
     const sucursalOptions = useMemo(() => {
@@ -36,7 +35,6 @@ function PuntoVenta() {
         }));
     }, [idSucursal]);
 
-    // Búsqueda
     const [codigo, setCodigo] = useState("");
     const [resultados, setResultados] = useState<IProductoBusqueda[]>([]);
     const [mostrarResultados, setMostrarResultados] = useState(false);
@@ -45,11 +43,9 @@ function PuntoVenta() {
     const inputRef = useRef<HTMLInputElement>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // Carrito
     const [carrito, setCarrito] = useState<ICarritoItem[]>([]);
     const [procesando, setProcesando] = useState(false);
 
-    // Turno de Caja
     const [turnoActivo, setTurnoActivo] = useState<ITurnoCaja | null>(null);
     const [mostrarModalCaja, setMostrarModalCaja] = useState(false);
     const [mostrarModalCierre, setMostrarModalCierre] = useState(false);
@@ -58,7 +54,6 @@ function PuntoVenta() {
     const [cargandoTurno, setCargandoTurno] = useState(true);
     const menuCajaRef = useRef<HTMLDivElement>(null);
 
-    // Sucursal Selector State
     const [mostrarSelectorSucursal, setMostrarSelectorSucursal] = useState(false);
 
     const loadTurnoCaja = async () => {
@@ -108,7 +103,7 @@ function PuntoVenta() {
 
                 setIdSucursal(sid);
                 setMostrarSelectorSucursal(false);
-                setCarrito([]); // Clear POS cart on branch switch
+                setCarrito([]);
 
                 try {
                     const pantallas = await getPantallasUsuario(sid.toString());
@@ -141,11 +136,6 @@ function PuntoVenta() {
     }, []);
 
     const ejecutarBusqueda = useCallback(async (texto: string) => {
-        // if (!idSucursal || !texto.trim()) {
-        //     setResultados([]);
-        //     setMostrarResultados(false);
-        //     return;
-        // }
 
         setBuscando(true);
         setMostrarResultados(true);
@@ -223,7 +213,6 @@ function PuntoVenta() {
                 );
             }
 
-            // Nuevo producto
             return [...prev, {
                 idProducto: producto.idProducto,
                 nombre: producto.nombre,
@@ -272,10 +261,6 @@ function PuntoVenta() {
             setMostrarModalCaja(true);
             return;
         }
-        // if (!idSucursal) {
-        //     warning("Atención", "Selecciona una sucursal antes de pagar.");
-        //     return;
-        // }
         if (carrito.length === 0) {
             warning("Atención", "Agrega productos al carrito antes de pagar.");
             return;
@@ -284,7 +269,6 @@ function PuntoVenta() {
         setProcesando(true);
 
         const request: IVentaRequest = {
-            // idSucursal: Number(idSucursal),
             idMetodoPago,
             items: carrito.map(item => ({
                 idProducto: item.idProducto,
@@ -364,12 +348,6 @@ function PuntoVenta() {
                             </div>
                         ) : (
                             <div className="flex flex-col flex-1">
-                                {/* <BranchFilter
-                                    onBranchChange={setIdSucursal}
-                                    value={idSucursal}
-                                    labelSucursal=""
-                                    placeholderSucursal="Sucursal..."
-                                /> */}
                             </div>
                         )}
 
@@ -396,7 +374,6 @@ function PuntoVenta() {
                                 onKeyDown={handleKeyDown}
                                 onFocus={() => { if (resultados.length > 0) setMostrarResultados(true); }}
                                 placeholder={"Escanear código de barras o buscar por nombre..."}
-                                // disabled={!idSucursal}
                                 className="w-full text-base bg-transparent border-none outline-none placeholder-gray-300 font-medium text-gray-700 disabled:cursor-not-allowed"
                                 autoFocus
                             />

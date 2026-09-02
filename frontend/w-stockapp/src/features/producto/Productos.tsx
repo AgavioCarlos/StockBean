@@ -193,7 +193,7 @@ function ProductosPage() {
         <PageContainer
             breadcrumbs={[{ label: "Catálogos", onClick: () => { } }, { label: "Productos" }]}
         >
-            <div className="bg-white rounded-card shadow-card border border-empresa overflow-hidden flex flex-col h-[calc(100vh-180px)]">
+            <div className="bg-white rounded-card shadow-card border border-empresa flex flex-col">
                 <Tabs
                     activeTab={activeTab}
                     onChange={setActiveTab}
@@ -203,52 +203,44 @@ function ProductosPage() {
                             label: "Productos",
                             icon: <IoMdList />,
                             content: (
-                                <div className="p-6 pt-2 flex flex-col h-full relative">
-                                    <div className="flex items-center justify-end mb-4 gap-2 flex-wrap sm:flex-nowrap">
-                                        <StatusFilter status={filtroEstado} onChange={setFiltroEstado} />
-                                        <div className="h-6 w-px bg-slate-200 mx-1"></div>
-                                        <RefreshButton onRefresh={refreshData} showText={false} />
-                                        <ExportPdfButton
-                                            data={rowDataFiltrada}
-                                            columns={columnasExportar}
-                                            fileName="Catálogo_Productos"
-                                            reportTitle="Baluarte - Catálogo de Productos"
-                                            reportSubtitle={`Filtro: Productos ${filtroEstado ? 'Activos' : 'Inactivos'}`}
-                                        />
-                                        <ExportExcelButton
-                                            data={rowDataFiltrada}
-                                            columns={columnasExportar}
-                                            fileName="Catálogo_Productos"
-                                        />
-                                        <div className="h-6 w-px bg-slate-200 mx-1"></div>
-                                        <SharedButton onClick={crud.newFromDetail} variant="primary" icon={<IoMdAddCircle size={20} />}></SharedButton>
-                                    </div>
-
-                                    <div className="flex-1 overflow-auto relative">
+                                <div className="p-6 pt-4 flex flex-col relative">
+                                    <div className="w-full relative">
                                         {loading && <LoadingOverlay message="Cargando productos..." />}
 
-                                        {!loading && rowDataFiltrada.length === 0 ? (
-                                            <EmptyState
-                                                icon={<IoMdAddCircle size={32} />}
-                                                title="No se encontraron productos"
-                                                description={filtroEstado ? "No hay productos activos registrados todavía." : "No hay productos inactivos."}
-                                                action={filtroEstado ? <SharedButton variant="primary" onClick={crud.newFromDetail}>Agregar el primero</SharedButton> : undefined}
-                                            />
-                                        ) : (
-                                            <DataTable
-                                                data={rowDataFiltrada}
-                                                columns={columnDefs}
-                                                onRowClick={(p) => {
-                                                    setImagenUrlPreview(p.imagenUrl || "");
-                                                    crud.handleRowClick(p, (item) => ({
-                                                        ...item,
-                                                        idCategoria: item.categoria?.idCategoria ?? item.idCategoria,
-                                                        idUnidad: item.unidad?.idUnidad ?? item.idUnidad,
-                                                        idMarca: item.marca?.idMarca ?? item.idMarca
-                                                    }));
-                                                }}
-                                            />
-                                        )}
+                                        <DataTable
+                                            data={rowDataFiltrada}
+                                            columns={columnDefs}
+                                            actionContent={
+                                                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                                                    <StatusFilter status={filtroEstado} onChange={setFiltroEstado} />
+                                                    <div className="h-6 w-px bg-slate-200 mx-1"></div>
+                                                    <RefreshButton onRefresh={refreshData} showText={false} />
+                                                    <ExportPdfButton
+                                                        data={rowDataFiltrada}
+                                                        columns={columnasExportar}
+                                                        fileName="Catálogo_Productos"
+                                                        reportTitle="Baluarte - Catálogo de Productos"
+                                                        reportSubtitle={`Filtro: Productos ${filtroEstado ? 'Activos' : 'Inactivos'}`}
+                                                    />
+                                                    <ExportExcelButton
+                                                        data={rowDataFiltrada}
+                                                        columns={columnasExportar}
+                                                        fileName="Catálogo_Productos"
+                                                    />
+                                                    <div className="h-6 w-px bg-slate-200 mx-1"></div>
+                                                    <SharedButton onClick={crud.newFromDetail} variant="primary" icon={<IoMdAddCircle size={20} />}></SharedButton>
+                                                </div>
+                                            }
+                                            onRowClick={(p) => {
+                                                setImagenUrlPreview(p.imagenUrl || "");
+                                                crud.handleRowClick(p, (item) => ({
+                                                    ...item,
+                                                    idCategoria: item.categoria?.idCategoria ?? item.idCategoria,
+                                                    idUnidad: item.unidad?.idUnidad ?? item.idUnidad,
+                                                    idMarca: item.marca?.idMarca ?? item.idMarca
+                                                }));
+                                            }}
+                                        />
                                     </div>
                                 </div>
                             )

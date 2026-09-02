@@ -190,9 +190,8 @@ export default function Usuarios() {
     const navigate = useNavigate();
 
     return (
-        // <MainLayout rightPanel={<UsuarioMetricsSidebar />}>
         <MainLayout>
-            <div className="flex flex-col h-full bg-slate-50">
+            <div className="flex flex-col h-full bg-transparent">
                 <Breadcrumb
                     showBackButton={true}
                     items={[
@@ -201,7 +200,7 @@ export default function Usuarios() {
                     ]}
                 />
 
-                <div className="flex-1 overflow-hiddn bg-white rounded-xl shadow-sm border border-gray-200 relative">
+                <div className="flex-1 overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 relative flex flex-col">
                     <Tabs
                         tabs={items}
                         activeTab={activeTab}

@@ -3,11 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { login } from "./LoginService";
 import { getPantallasUsuario, savePantallasToLocalStorage } from "../../services/Pantallas";
 import { useAlerts } from "../../hooks/useAlerts";
-import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaCog, FaDatabase, FaBuilding, FaChevronDown } from 'react-icons/fa';
+import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaCog, FaDatabase } from 'react-icons/fa';
 import PaymentModal from "../../components/PaymentModal";
 import { DatabaseConfigModal } from "./components/DatabaseConfigModal";
 import { apiFetch } from "../../services/Api";
-import { Sucursales } from "../../services/Lovs";
 
 function Login() {
   const navigate = useNavigate();
@@ -70,6 +69,11 @@ function Login() {
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("user_data", JSON.stringify(data));
         localStorage.removeItem("id_sucursal");
+        if (data.id_empresa) {
+          localStorage.setItem("id_empresa", data.id_empresa.toString());
+        } else {
+          localStorage.removeItem("id_empresa");
+        }
 
         try {
           const pantallas = await getPantallasUsuario();
@@ -77,17 +81,6 @@ function Login() {
         } catch (pantallasError) {
           console.error("⚠️ Error al cargar pantallas:", pantallasError);
         }
-
-        // if (data.empresa && data.empresa.length > 0) {
-        //   localStorage.removeItem("requiresEmpresaConfig");
-        //   const emp = data.empresa[0] as any;
-        //   const idEmp = emp.idEmpresa || emp.id_empresa;
-        //   localStorage.setItem("id_empresa", idEmp?.toString() || "");
-        // } else if (data.cuenta === "sistemas") {
-        //   localStorage.setItem("requiresEmpresaConfig", "false");
-        // } else {
-        //   localStorage.setItem("requiresEmpresaConfig", "true");
-        // }
         window.location.href = "/home";
       }
     } catch (err: any) {
@@ -109,7 +102,6 @@ function Login() {
   };
   return (
     <div className="min-h-screen bg-[#f1f5f9] flex items-center justify-center p-4 relative overflow-hidden font-sans">
-      {/* Dynamic Background Elements */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-5%] left-[-5%] w-[45%] h-[45%] bg-indigo-200/30 rounded-full blur-[100px] animate-pulse"></div>
         <div className="absolute bottom-[-5%] right-[-5%] w-[45%] h-[45%] bg-blue-200/30 rounded-full blur-[100px] opacity-70"></div>
@@ -281,5 +273,4 @@ function Login() {
     </div>
   );
 }
-
 export default Login;

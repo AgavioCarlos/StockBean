@@ -37,9 +37,7 @@ export const UsuarioList: React.FC<UsuarioListProps> = ({
                         onClick={onNew}
                         variant="primary"
                         size="icon"
-                        title="Nuevo Usuario"
-                        aria-label="Nuevo Usuario"
-                        icon={<IoMdAddCircle size={28} aria-hidden="true" />}
+                        icon={<IoMdAddCircle size={22} aria-hidden="true" />}
                     />
                 }
             />

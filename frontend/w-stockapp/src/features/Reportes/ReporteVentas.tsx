@@ -24,7 +24,6 @@ export default function ReporteVentas() {
         setFilteredData(reporteData);
     }, [reporteData]);
 
-    // ─── Cargar datos ────────────────────────────────────────
     const cargarReporte = useCallback(async () => {
         if (!user) return;
         setLoading(true);
@@ -48,7 +47,6 @@ export default function ReporteVentas() {
         cargarReporte();
     }, [cargarReporte]);
 
-    // ─── Estadísticas resumen ────────────────────────────────
     const stats = useMemo(() => {
         const totalVentas = reporteData.length;
         const montoTotal = reporteData.reduce((acc, v) => acc + (v.totalVenta || 0), 0);
@@ -58,7 +56,6 @@ export default function ReporteVentas() {
         return { totalVentas, montoTotal, totalProductos, promedioVenta };
     }, [reporteData]);
 
-    // ─── Formato de fecha ────────────────────────────────────
     const formatFecha = (fechaStr: string) => {
         if (!fechaStr) return "N/A";
         const fecha = new Date(fechaStr);
@@ -106,7 +103,6 @@ export default function ReporteVentas() {
         }
     ], []);
 
-    // ─── Columnas del DataTable ──────────────────────────────
     const columnas = useMemo<Column<VentaReporte>[]>(() => [
         {
             key: "idVenta",
@@ -193,7 +189,6 @@ export default function ReporteVentas() {
     return (
         <MainLayout>
             <div className="flex flex-col h-full bg-slate-50">
-                {/* Breadcrumb */}
                 <div className="mb-4">
                     <Breadcrumb
                         items={[
@@ -204,9 +199,7 @@ export default function ReporteVentas() {
                     />
                 </div>
 
-                {/* Summary Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    {/* Total Ventas */}
                     <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-xs text-gray-400 uppercase font-bold tracking-wider">Total Ventas</span>
@@ -218,7 +211,6 @@ export default function ReporteVentas() {
                         <span className="text-xs text-gray-400 mt-1">transacciones</span>
                     </div>
 
-                    {/* Monto Total */}
                     <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-xs text-gray-400 uppercase font-bold tracking-wider">Monto Total</span>
@@ -232,7 +224,6 @@ export default function ReporteVentas() {
                         <span className="text-xs text-gray-400 mt-1">acumulado</span>
                     </div>
 
-                    {/* Productos Vendidos */}
                     <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-xs text-gray-400 uppercase font-bold tracking-wider">Productos Vendidos</span>
@@ -244,7 +235,6 @@ export default function ReporteVentas() {
                         <span className="text-xs text-gray-400 mt-1">unidades</span>
                     </div>
 
-                    {/* Promedio por Venta */}
                     <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-xs text-gray-400 uppercase font-bold tracking-wider">Promedio / Venta</span>
@@ -259,9 +249,7 @@ export default function ReporteVentas() {
                     </div>
                 </div>
 
-                {/* Filter + Table */}
                 <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-visible">
-                    {/* Branch Filter */}
                     <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <div className="w-9 h-9 bg-indigo-50 rounded-xl flex items-center justify-center">
@@ -281,7 +269,6 @@ export default function ReporteVentas() {
                         />
                     </div>
 
-                    {/* Loading overlay */}
                     <div className="relative">
                         {loading && (
                             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-[2px] rounded-lg transition-all duration-300">
