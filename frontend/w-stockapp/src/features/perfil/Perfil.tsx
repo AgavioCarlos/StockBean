@@ -16,7 +16,7 @@ import {
     FaEyeSlash,
     FaSave
 } from "react-icons/fa";
-import { consultarPersona, actualizarPersona } from "../Persona/PersonaService";
+import { consultarPersona, actualizarPersona } from "../persona/PersonaService";
 import Breadcrumb from "../../components/Breadcrumb";
 import { obtenerVentasPorDia } from "../Reportes/ReporteVentasService";
 import type { IVentasPorDia } from "../Reportes/reporte_ventas.interface";

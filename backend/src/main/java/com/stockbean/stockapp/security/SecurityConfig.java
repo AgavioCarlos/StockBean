@@ -84,7 +84,8 @@ public class SecurityConfig {
                 List.of("http://10.225.16.51:5173", "http://10.225.16.248:5173", "http://localhost:5173",
                         "https://stockapp.agaviocarlos.com", "https://stockapp.agaviocarlos.com:5173",
                         "https://stocker.agaviocarlos.com", "https://stocker.agaviocarlos.com:5173",
-                        "https://stock.agaviocarlos.com"));
+                        "https://stock.agaviocarlos.com", 
+                        "https://baluarte.agaviocarlos.com", "https://baluarte.agaviocarlos.com:5173"));
         // Si necesitas patrones usa:
         // cfg.setAllowedOriginPatterns(List.of("http://localhost:*"));
 

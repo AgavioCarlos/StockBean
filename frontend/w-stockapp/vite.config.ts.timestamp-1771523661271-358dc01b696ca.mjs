@@ -8,7 +8,7 @@ var vite_config_default = defineConfig({
   server: {
     host: true,
     port: 5173,
-    allowedHosts: ["stockapp", "localhost", "stockapp.agaviocarlos.com"]
+    allowedHosts: ["stockapp", "localhost", "stockapp.agaviocarlos.com", "baluarte.agaviocarlos.com"]
   }
 });
 export {

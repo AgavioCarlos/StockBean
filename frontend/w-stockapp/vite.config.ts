@@ -9,11 +9,14 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
-    allowedHosts: ['stockapp', 'localhost', 'stockapp.agaviocarlos.com']
+    allowedHosts: ['stockapp', 'localhost', 'baluarte.agaviocarlos.com'],
+    proxy: {        
+        target: 'http://localhost:8080',
+}
   },
   preview: {
     host: true,
     port: 5173,
-    allowedHosts: ['stockapp', 'localhost', 'stockapp.agaviocarlos.com']
+    allowedHosts: ['stockapp', 'localhost', 'baluarte.agaviocarlos.com']
   }
 })

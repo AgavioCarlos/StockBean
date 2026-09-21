@@ -3,12 +3,12 @@ import { useAuth } from '../hooks/useAuth';
 import { consultarEmpresas } from '../services/Empresas';
 import {
     consultarSucursalesPorEmpresa
-} from '../features/Sucursal/SucursalService';
+} from '../features/sucursal/SucursalService';
 import { obtenerPorIdUsuario } from '../services/UsuarioSucursalService';
 import { Sucursal } from '../interfaces/sucursal.interface';
 import { SearchableSelect } from './SearchableSelect';
-import { consultarProveedores } from '../features/Proveedores/ProveedoresService';
-import { Proveedor } from '../features/Proveedores/proveedor.interface';
+import { consultarProveedores } from '../features/proveedores/ProveedoresService';
+import { Proveedor } from '../features/proveedores/proveedor.interface';
 
 interface BranchFilterProps {
     onBranchChange: (idSucursal: number | "") => void;

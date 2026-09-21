@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MdStore, MdCheckBox, MdCheckBoxOutlineBlank, MdSecurity } from 'react-icons/md';
-import { consultarSucursales } from '../../Sucursal/SucursalService';
+import { consultarSucursales } from '../../sucursal/SucursalService';
 import { obtenerPorIdUsuario, asignarUsuarioSucursal, actualizarUsuarioSucursal, UsuarioSucursalResponse } from '../../../services/UsuarioSucursalService';
 import Swal from 'sweetalert2';
 import Tabs from '../../../components/Tabs';

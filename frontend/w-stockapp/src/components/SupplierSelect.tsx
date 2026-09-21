@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { SearchableSelect } from './SearchableSelect';
-import { consultarProveedores } from '../features/Proveedores/ProveedoresService';
-import { Proveedor } from '../features/Proveedores/proveedor.interface';
+import { consultarProveedores } from '../features/proveedores/ProveedoresService';
+import { Proveedor } from '../features/proveedores/proveedor.interface';
 
 interface SupplierSelectProps {
     value: number | "";

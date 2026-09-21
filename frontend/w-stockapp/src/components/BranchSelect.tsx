@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { consultarEmpresas } from '../services/Empresas';
-import { consultarSucursalesPorEmpresa } from '../features/Sucursal/SucursalService';
+import { consultarSucursalesPorEmpresa } from '../features/sucursal/SucursalService';
 import { obtenerPorIdUsuario } from '../services/UsuarioSucursalService';
 import { Sucursal } from '../interfaces/sucursal.interface';
 import { SearchableSelect } from './SearchableSelect';

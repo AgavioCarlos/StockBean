@@ -11,7 +11,7 @@ import { useResponsive } from "../../hooks/useResponsive";
 import { useAuth } from "../../hooks/useAuth";
 import { useStyles } from "../../hooks/useStyles";
 import { obtenerAlertas, contarAlertas, marcarAlertaLeida, marcarTodasLeidas, type IAlerta } from "../../services/AlertaService";
-import ChatRoom from "../../features/Chat/components/ChatRoom";
+import ChatRoom from "../../features/chat/components/ChatRoom";
 
 interface HeaderProps {
     isSidebarOpen?: boolean;
